@@ -31,7 +31,21 @@ fn b64() -> base64::engine::GeneralPurpose {
     base64::engine::general_purpose::STANDARD_NO_PAD
 }
 
+#[cfg(target_os = "linux")]
+fn keychain_reachable() -> bool {
+    std::env::var_os("DBUS_SESSION_BUS_ADDRESS").is_some_and(|v| !v.is_empty())
+        || std::env::var_os("XDG_RUNTIME_DIR").is_some_and(|d| std::path::Path::new(&d).join("bus").exists())
+}
+
+#[cfg(not(target_os = "linux"))]
+fn keychain_reachable() -> bool {
+    true
+}
+
 fn master(create: bool) -> Option<LessSafeKey> {
+    if !keychain_reachable() {
+        return None;
+    }
     let entry = keyring::Entry::new(&service(), MASTER).ok()?;
     let raw = match entry.get_password() {
         Ok(hex) => (0..hex.len()).step_by(2).map(|i| u8::from_str_radix(hex.get(i..i + 2)?, 16).ok()).collect::<Option<Vec<u8>>>()?,
@@ -94,12 +108,12 @@ fn write(v: &Vault) -> Result<(), String> {
     std::fs::rename(&tmp, &path).map_err(|e| e.to_string())
 }
 
-fn plain_items(v: &Vault, key: Option<&LessSafeKey>) -> BTreeMap<String, String> {
+fn plain_items(v: Vault) -> BTreeMap<String, String> {
     if !v.enc {
-        return v.items.clone();
+        return v.items;
     }
-    let Some(k) = key else { return BTreeMap::new() };
-    v.items.iter().filter_map(|(n, c)| open(k, n, c).map(|p| (n.clone(), p))).collect()
+    let Some(k) = master(false) else { return BTreeMap::new() };
+    v.items.iter().filter_map(|(n, c)| open(&k, n, c).map(|p| (n.clone(), p))).collect()
 }
 
 pub fn get(name: &str) -> Option<String> {
@@ -135,8 +149,7 @@ fn save_all(items: BTreeMap<String, String>) -> Result<Store, String> {
 }
 
 pub fn set(name: &str, value: &str) -> Result<Store, String> {
-    let v = read();
-    let mut items = plain_items(&v, master(false).as_ref());
+    let mut items = plain_items(read());
     items.insert(name.to_owned(), value.to_owned());
     save_all(items)
 }
@@ -146,13 +159,16 @@ pub fn delete(name: &str) -> Result<(), String> {
     if !v.items.contains_key(name) {
         return Ok(());
     }
-    let mut items = plain_items(&v, master(false).as_ref());
+    let mut items = plain_items(v);
     items.remove(name);
     save_all(items).map(|_| ())
 }
 
 pub fn purge() {
     let _ = std::fs::remove_file(file_path());
+    if !keychain_reachable() {
+        return;
+    }
     if let Ok(e) = keyring::Entry::new(&service(), MASTER) {
         let _ = e.delete_credential();
     }

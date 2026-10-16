@@ -1,0 +1,314 @@
+{
+ "engines": {
+  "tag": "master-968-8cd731e",
+  "assets": {
+   "windows-rocm": {
+    "url": "https://github.com/leejet/stable-diffusion.cpp/releases/download/master-968-8cd731e/sd-master-8cd731e-bin-win-rocm-10.1.0-x64.zip",
+    "size": 259045043,
+    "sha256": "5c799b01d88da4a5cb4bc385710237ecacb6db08e2bf3fad6962be0a0a67715a"
+   },
+   "windows-vulkan": {
+    "url": "https://github.com/leejet/stable-diffusion.cpp/releases/download/master-968-8cd731e/sd-master-8cd731e-bin-win-vulkan-x64.zip",
+    "size": 30163610,
+    "sha256": "060767935e2543c27e0fcd5a024f62d978970c221c60658da87c768c27a841fa"
+   },
+   "windows-cuda": {
+    "url": "https://github.com/leejet/stable-diffusion.cpp/releases/download/master-968-8cd731e/sd-master-8cd731e-bin-win-cuda12-x64.zip",
+    "size": 338043602,
+    "sha256": "8b6f311f22b56db02f545a674f7549a0da283f7134d5fd01c42014b81ab78af0"
+   },
+   "windows-cuda-runtime": {
+    "url": "https://github.com/leejet/stable-diffusion.cpp/releases/download/master-968-8cd731e/cudart-sd-bin-win-cu12-x64.zip",
+    "size": 563452046,
+    "sha256": "fe20366827d357c00797eebb58244dddab7fd9a348d70090c3871004c320f38d"
+   },
+   "windows-cpu": {
+    "url": "https://github.com/leejet/stable-diffusion.cpp/releases/download/master-968-8cd731e/sd-master-8cd731e-bin-win-cpu-x64.zip",
+    "size": 17583160,
+    "sha256": "3289065032e298d751964ced2fb444c6e11f58793ba14c76f1f6a1d5b5ffff9c"
+   },
+   "linux-rocm": {
+    "url": "https://github.com/leejet/stable-diffusion.cpp/releases/download/master-968-8cd731e/sd-master-8cd731e-bin-Linux-Ubuntu-24.04-x86_64-rocm-10.1.0.zip",
+    "size": 285043485,
+    "sha256": "63cafa87f8ab6c28a261fd437109b6845a8eb706fcce7a3f13a811dba6e0cb77"
+   },
+   "linux-vulkan": {
+    "url": "https://github.com/leejet/stable-diffusion.cpp/releases/download/master-968-8cd731e/sd-master-8cd731e-bin-Linux-Ubuntu-24.04-x86_64-vulkan.zip",
+    "size": 37047375,
+    "sha256": "1e82f932a678e28035d64bc9909b9c122c6ec0f92fcfd8e9ac2bea99b5619505"
+   },
+   "linux-cpu": {
+    "url": "https://github.com/leejet/stable-diffusion.cpp/releases/download/master-968-8cd731e/sd-master-8cd731e-bin-Linux-Ubuntu-24.04-x86_64.zip",
+    "size": 26182248,
+    "sha256": "27362e7b6d2c2bc1f56a38a65f74c270abb7f7fa2e3bd07be82be0b3c8de7abc"
+   },
+   "macos-metal": {
+    "url": "https://github.com/leejet/stable-diffusion.cpp/releases/download/master-968-8cd731e/sd-master-8cd731e-bin-Darwin-macOS-26.6.2-arm64.zip",
+    "size": 35250705,
+    "sha256": "767ce7a876fe4e6727c2020bc0593dd809d6a43a6a8b495c92837bf7449b9068"
+   }
+  }
+ },
+ "rocm": {
+  "index": "https://stable.repo.amd.com/rocm/whl-next",
+  "version": "10.1.0"
+ },
+ "recipes": [
+  {
+   "id": "qwen-image-2.1",
+   "name": "Qwen-Image 2.1",
+   "about": "Best quality and prompt following. Strong with people, text in images, and editing.",
+   "license": "Apache-2.0",
+   "edit": true,
+   "variants": [
+    {
+     "id": "int8",
+     "label": "Full quality (int8)",
+     "min_vram_gb": 20,
+     "files": {
+      "diffusion": {
+       "repo": "Comfy-Org/Qwen-Image-2.1",
+       "path": "diffusion_models/qwen_image_2.1_int8_convrot.safetensors",
+       "size": 7256783064,
+       "sha256": "cb74113cb03faecd79611b01fd7fd642f0aa60d6f0b95086abee214d75eaa57d"
+      },
+      "llm": {
+       "repo": "Comfy-Org/Qwen-Image-2.1",
+       "path": "text_encoders/qwen3vl_8b_int8_convrot.safetensors",
+       "size": 9350798360,
+       "sha256": "8bfd0f6e12abf2d2d697ecc888e5e90b0d6741d6708f05799f53afa560452e8f"
+      },
+      "llm_vision": {
+       "repo": "Qwen/Qwen3-VL-8B-Instruct-GGUF",
+       "path": "mmproj-Qwen3VL-8B-Instruct-Q8_0.gguf",
+       "size": 752289728,
+       "sha256": "c6ba85508d82f42590e6eb77d5340369ab6fecf107a7561d809523d8aa5f3bfd"
+      },
+      "vae": {
+       "repo": "Comfy-Org/Qwen-Image-2.1",
+       "path": "vae/qwen_image_2.1_vae_bf16.safetensors",
+       "size": 675509688,
+       "sha256": "bb21f7473051e1ac368515dd3f2e15cd44d7a11748ee8823e1ddca3e4876b7c9"
+      }
+     },
+     "args": [
+      "--cfg-scale",
+      "3.5",
+      "--steps",
+      "30",
+      "--sampling-method",
+      "euler"
+     ],
+     "download_bytes": 18035380840
+    },
+    {
+     "id": "q4",
+     "label": "Balanced (Q4)",
+     "min_vram_gb": 12,
+     "files": {
+      "diffusion": {
+       "repo": "leejet/Qwen-Image-2.1-GGUF",
+       "path": "qwen_image_2.1-Q4_K.gguf",
+       "size": 4197494816,
+       "sha256": "29f9c83c249ff0292fb2943fceddfa2319b446601866c82a4f8be062abea72c2"
+      },
+      "llm": {
+       "repo": "Qwen/Qwen3-VL-8B-Instruct-GGUF",
+       "path": "Qwen3VL-8B-Instruct-Q4_K_M.gguf",
+       "size": 5027784800,
+       "sha256": "67d1659bfe71b89d50b45a4ad1a9e5b997e5bb16ce5da66a6a6167abd569e9e2"
+      },
+      "llm_vision": {
+       "repo": "Qwen/Qwen3-VL-8B-Instruct-GGUF",
+       "path": "mmproj-Qwen3VL-8B-Instruct-Q8_0.gguf",
+       "size": 752289728,
+       "sha256": "c6ba85508d82f42590e6eb77d5340369ab6fecf107a7561d809523d8aa5f3bfd"
+      },
+      "vae": {
+       "repo": "Comfy-Org/Qwen-Image-2.1",
+       "path": "vae/qwen_image_2.1_vae_bf16.safetensors",
+       "size": 675509688,
+       "sha256": "bb21f7473051e1ac368515dd3f2e15cd44d7a11748ee8823e1ddca3e4876b7c9"
+      }
+     },
+     "args": [
+      "--cfg-scale",
+      "3.5",
+      "--steps",
+      "30",
+      "--sampling-method",
+      "euler"
+     ],
+     "download_bytes": 10653079032
+    },
+    {
+     "id": "q3-offload",
+     "label": "Low VRAM (Q3, uses system RAM)",
+     "min_vram_gb": 8,
+     "min_ram_gb": 16,
+     "files": {
+      "diffusion": {
+       "repo": "leejet/Qwen-Image-2.1-GGUF",
+       "path": "qwen_image_2.1-Q3_K.gguf",
+       "size": 3270553632,
+       "sha256": "5a6352cb450d334ba17a9d18c7fd8c3e774799245b9da0f963ce0c6624deb758"
+      },
+      "llm": {
+       "repo": "Qwen/Qwen3-VL-8B-Instruct-GGUF",
+       "path": "Qwen3VL-8B-Instruct-Q4_K_M.gguf",
+       "size": 5027784800,
+       "sha256": "67d1659bfe71b89d50b45a4ad1a9e5b997e5bb16ce5da66a6a6167abd569e9e2"
+      },
+      "llm_vision": {
+       "repo": "Qwen/Qwen3-VL-8B-Instruct-GGUF",
+       "path": "mmproj-Qwen3VL-8B-Instruct-Q8_0.gguf",
+       "size": 752289728,
+       "sha256": "c6ba85508d82f42590e6eb77d5340369ab6fecf107a7561d809523d8aa5f3bfd"
+      },
+      "vae": {
+       "repo": "Comfy-Org/Qwen-Image-2.1",
+       "path": "vae/qwen_image_2.1_vae_bf16.safetensors",
+       "size": 675509688,
+       "sha256": "bb21f7473051e1ac368515dd3f2e15cd44d7a11748ee8823e1ddca3e4876b7c9"
+      }
+     },
+     "args": [
+      "--cfg-scale",
+      "3.5",
+      "--steps",
+      "30",
+      "--sampling-method",
+      "euler",
+      "--offload-to-cpu"
+     ],
+     "download_bytes": 9726137848
+    }
+   ]
+  },
+  {
+   "id": "qwen-image-2.1-turbo",
+   "name": "Qwen-Image 2.1 Turbo",
+   "about": "Same model family, 8 steps instead of 30. About 4x faster, slightly less detail.",
+   "license": "Apache-2.0",
+   "edit": true,
+   "variants": [
+    {
+     "id": "int8",
+     "label": "Full quality (int8)",
+     "min_vram_gb": 20,
+     "files": {
+      "diffusion": {
+       "repo": "Comfy-Org/Qwen-Image-2.1",
+       "path": "diffusion_models/qwen_image_2.1_turbo_int8_convrot.safetensors",
+       "size": 7256787829,
+       "sha256": "8144a0182964aa8403ad6dbc011db837304167d235161b9aabaa8532e967314c"
+      },
+      "llm": {
+       "repo": "Comfy-Org/Qwen-Image-2.1",
+       "path": "text_encoders/qwen3vl_8b_int8_convrot.safetensors",
+       "size": 9350798360,
+       "sha256": "8bfd0f6e12abf2d2d697ecc888e5e90b0d6741d6708f05799f53afa560452e8f"
+      },
+      "llm_vision": {
+       "repo": "Qwen/Qwen3-VL-8B-Instruct-GGUF",
+       "path": "mmproj-Qwen3VL-8B-Instruct-Q8_0.gguf",
+       "size": 752289728,
+       "sha256": "c6ba85508d82f42590e6eb77d5340369ab6fecf107a7561d809523d8aa5f3bfd"
+      },
+      "vae": {
+       "repo": "Comfy-Org/Qwen-Image-2.1",
+       "path": "vae/qwen_image_2.1_vae_bf16.safetensors",
+       "size": 675509688,
+       "sha256": "bb21f7473051e1ac368515dd3f2e15cd44d7a11748ee8823e1ddca3e4876b7c9"
+      }
+     },
+     "args": [
+      "--cfg-scale",
+      "1.0",
+      "--steps",
+      "8",
+      "--sampling-method",
+      "euler",
+      "--sigmas",
+      "qwen-image-2.1-turbo"
+     ],
+     "download_bytes": 18035385605
+    }
+   ]
+  },
+  {
+   "id": "z-image-turbo",
+   "name": "Z-Image Turbo",
+   "about": "Small and fast. Good photos in 8 steps. Best choice for 6-12 GB GPUs.",
+   "license": "Apache-2.0",
+   "edit": false,
+   "variants": [
+    {
+     "id": "q8",
+     "label": "High quality (Q8)",
+     "min_vram_gb": 12,
+     "files": {
+      "diffusion": {
+       "repo": "leejet/Z-Image-Turbo-GGUF",
+       "path": "z_image_turbo-Q8_0.gguf",
+       "size": 6577440704,
+       "sha256": "df1c5baa86d1398c979495a6072dbcee79444fdb884a2445582ba0769c44e9a1"
+      },
+      "llm": {
+       "repo": "unsloth/Qwen3-4B-Instruct-2507-GGUF",
+       "path": "Qwen3-4B-Instruct-2507-Q8_0.gguf",
+       "size": 4280405600,
+       "sha256": "391c1e410fd9f4cf2de2b510273b56a84c19ce18f4fa3bfb3774031dac4ef068"
+      },
+      "vae": {
+       "repo": "Comfy-Org/z_image_turbo",
+       "path": "split_files/vae/ae.safetensors",
+       "size": 335304388,
+       "sha256": "afc8e28272cd15db3919bacdb6918ce9c1ed22e96cb12c4d5ed0fba823529e38"
+      }
+     },
+     "args": [
+      "--cfg-scale",
+      "1.0",
+      "--steps",
+      "8"
+     ],
+     "download_bytes": 11193150692
+    },
+    {
+     "id": "q4",
+     "label": "Small (Q4)",
+     "min_vram_gb": 6,
+     "files": {
+      "diffusion": {
+       "repo": "leejet/Z-Image-Turbo-GGUF",
+       "path": "z_image_turbo-Q4_K.gguf",
+       "size": 3864250304,
+       "sha256": "14b375ab4f226bc5378f68f37e899ef3c2242b8541e61e2bc1aff40976086fbd"
+      },
+      "llm": {
+       "repo": "unsloth/Qwen3-4B-Instruct-2507-GGUF",
+       "path": "Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
+       "size": 2497281120,
+       "sha256": "3605803b982cb64aead44f6c1b2ae36e3acdb41d8e46c8a94c6533bc4c67e597"
+      },
+      "vae": {
+       "repo": "Comfy-Org/z_image_turbo",
+       "path": "split_files/vae/ae.safetensors",
+       "size": 335304388,
+       "sha256": "afc8e28272cd15db3919bacdb6918ce9c1ed22e96cb12c4d5ed0fba823529e38"
+      }
+     },
+     "args": [
+      "--cfg-scale",
+      "1.0",
+      "--steps",
+      "8",
+      "--offload-to-cpu"
+     ],
+     "download_bytes": 6696835812
+    }
+   ]
+  }
+ ]
+}

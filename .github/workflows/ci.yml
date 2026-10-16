@@ -1,0 +1,142 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:
+    inputs:
+      mcpb_url:
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/check.mjs
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo clippy --release --locked -- -D warnings
+
+  build:
+    needs: check
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            bin: imagegen-cc.exe
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            bin: imagegen-cc
+          - os: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-musl
+            bin: imagegen-cc
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            bin: imagegen-cc
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            bin: imagegen-cc
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+      - if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y musl-tools cmake clang
+      - run: cargo build --release --locked --target ${{ matrix.target }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bin-${{ matrix.target }}
+          path: target/${{ matrix.target }}/release/${{ matrix.bin }}
+          if-no-files-found: error
+
+  pack:
+    needs: build
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Place binaries
+        run: |
+          for t in x86_64-pc-windows-msvc x86_64-unknown-linux-musl aarch64-unknown-linux-musl; do
+            mkdir -p target/$t/release && cp artifacts/bin-$t/* target/$t/release/
+          done
+          mkdir -p target/universal-apple-darwin/release
+          lipo -create artifacts/bin-aarch64-apple-darwin/imagegen-cc artifacts/bin-x86_64-apple-darwin/imagegen-cc -output target/universal-apple-darwin/release/imagegen-cc
+          codesign --force --sign - target/universal-apple-darwin/release/imagegen-cc
+          lipo -info target/universal-apple-darwin/release/imagegen-cc
+      - run: node scripts/pack.mjs
+        env:
+          MCPB_URL: ${{ inputs.mcpb_url }}
+      - run: npx -y @anthropic-ai/claude-code plugin validate dist/imagegen-cc
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+          include-hidden-files: true
+          if-no-files-found: error
+
+  smoke:
+    needs: pack
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, ubuntu-24.04-arm, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      - name: Unlock keychain service (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y gnome-keyring dbus-x11 unzip
+      - name: Smoke test with OS keychain (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          eval "$(dbus-launch --sh-syntax)"
+          echo -n "ci" | gnome-keyring-daemon --unlock --components=secrets >/dev/null
+          node scripts/smoke.mjs --mcpb dist/release/imagegen-cc.mcpb
+      - name: Smoke test without keychain (Linux headless fallback)
+        if: runner.os == 'Linux'
+        run: env -u DBUS_SESSION_BUS_ADDRESS node scripts/smoke.mjs --mcpb dist/release/imagegen-cc.mcpb
+      - name: Smoke test
+        if: runner.os != 'Linux'
+        run: node scripts/smoke.mjs --mcpb dist/release/imagegen-cc.mcpb
+      - name: Intel slice of the universal binary (Rosetta)
+        if: runner.os == 'macOS'
+        run: |
+          mkdir -p /tmp/b && tar -xf dist/release/imagegen-cc.mcpb -C /tmp/b
+          lipo -archs /tmp/b/server/imagegen-cc
+          softwareupdate --install-rosetta --agree-to-license >/dev/null 2>&1 || true
+          arch -x86_64 /tmp/b/server/imagegen-cc hw

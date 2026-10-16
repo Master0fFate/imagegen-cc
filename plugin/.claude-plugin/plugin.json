@@ -1,0 +1,12 @@
+{
+  "name": "imagegen-cc",
+  "displayName": "Image Generation",
+  "version": "0.1.0",
+  "description": "Lets Claude generate and edit images with your own local model or any OpenAI-compatible image API",
+  "author": { "name": "Master0fFate", "url": "https://github.com/Master0fFate" },
+  "homepage": "https://github.com/Master0fFate/imagegen-cc",
+  "repository": "https://github.com/Master0fFate/imagegen-cc",
+  "license": "MIT",
+  "keywords": ["image", "image-generation", "stable-diffusion", "qwen-image", "flux", "mcp"],
+  "mcpServers": "https://github.com/Master0fFate/imagegen-cc/releases/download/v0.1.0/imagegen-cc.mcpb"
+}

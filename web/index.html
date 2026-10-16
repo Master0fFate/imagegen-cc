@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Image generation setup</title>
+<style>
+:root{
+  --ground:#eef0ec;--surface:#e1e4dd;--surface-2:#d3d7ce;--ink:#0e0f0d;--ink-2:#41443e;
+  --accent:#0a3dff;--accent-ink:#ffffff;--danger:#a3231b;--ok:#0b6b2f;
+  --f:"Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --s-xl:clamp(44px,6.4vw,92px);--s-l:clamp(28px,3vw,40px);--s-m:20px;--s-b:17px;--s-s:15px;
+  --pad:clamp(16px,3vw,32px);--gap:clamp(96px,11vw,168px);
+  --ease:cubic-bezier(.2,.7,.2,1);
+}
+*{box-sizing:border-box;margin:0}
+[hidden]{display:none!important}
+html{background:var(--ground);color:var(--ink);font:400 var(--s-b)/1.55 var(--f);-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
+body{min-height:100svh}
+a{color:inherit}
+::selection{background:var(--accent);color:var(--accent-ink)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.wrap{max-width:1360px;margin:0 auto;padding:0 var(--pad)}
+.bar{position:sticky;top:0;z-index:5;background:var(--ground)}
+.bar .wrap{display:flex;align-items:center;gap:28px;height:68px}
+.mark{font-weight:700;font-size:var(--s-m);letter-spacing:-.02em;text-decoration:none}
+.bar nav{display:flex;gap:22px;margin-left:auto}
+.bar nav a{text-decoration:none;font-size:var(--s-s);color:var(--ink-2);transition:color .2s var(--ease)}
+.bar nav a:hover{color:var(--ink)}
+.status{font-size:var(--s-s);color:var(--ink)}
+.hero{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:clamp(32px,5vw,80px);padding:clamp(48px,7vw,104px) 0 0;align-items:end}
+h1{font-size:var(--s-xl);line-height:.95;letter-spacing:-.045em;font-weight:700;max-width:11ch}
+.lead{font-size:var(--s-m);line-height:1.45;max-width:36ch;margin-top:28px}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:36px}
+.btn{appearance:none;border:0;border-radius:0;font:600 var(--s-b)/1 var(--f);padding:0 24px;height:52px;cursor:pointer;background:var(--accent);color:var(--accent-ink);transition:transform .12s var(--ease),background-color .2s var(--ease)}
+.btn:hover{background:#0030d6}
+.btn:active{transform:scale(.97)}
+.btn[disabled]{background:var(--surface-2);color:var(--ink-2);cursor:not-allowed}
+.btn.quiet{background:var(--surface);color:var(--ink)}
+.btn.quiet:hover{background:var(--surface-2)}
+.btn.small{height:40px;padding:0 16px;font-size:var(--s-s)}
+.btn.danger{background:var(--danger)}
+.machine{background:var(--ink);color:var(--ground);padding:clamp(24px,3vw,40px)}
+.machine .gpu{font-size:var(--s-l);line-height:1.05;letter-spacing:-.03em;font-weight:700}
+.machine .nums{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:40px}
+.machine .num{font-size:var(--s-xl);line-height:.9;letter-spacing:-.05em;font-weight:700}
+.machine .unit{font-size:var(--s-s);color:#b9bcb5;margin-top:10px}
+.machine .eng{margin-top:36px;font-size:var(--s-s);color:#d8dbd4}
+section{padding-top:var(--gap)}
+.head{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:clamp(24px,4vw,64px);align-items:end;margin-bottom:40px}
+h2{font-size:var(--s-l);line-height:1.02;letter-spacing:-.035em;font-weight:700;max-width:16ch}
+.head p{max-width:52ch}
+.rows{display:grid;gap:6px}
+.row{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1.5fr) auto;gap:clamp(16px,3vw,48px);align-items:center;background:var(--surface);padding:clamp(20px,2.4vw,32px)}
+.row.best{background:var(--ink);color:var(--ground)}
+.row h3{font-size:var(--s-m);letter-spacing:-.02em;line-height:1.2}
+.row .about{margin-top:6px;font-size:var(--s-s)}
+.row.best .about,.row.best .meta{color:#d8dbd4}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg label{position:relative;cursor:pointer}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg span{display:block;padding:10px 14px;background:var(--surface-2);color:var(--ink);font-size:var(--s-s);transition:background-color .2s var(--ease)}
+.row.best .seg span{background:#2a2c28;color:var(--ground)}
+.seg input:checked+span{background:var(--accent);color:var(--accent-ink)}
+.seg input:disabled+span{opacity:.45;cursor:not-allowed}
+.seg input:focus-visible+span{outline:3px solid var(--accent);outline-offset:2px}
+.meta{font-size:var(--s-s);color:var(--ink-2);margin-top:10px}
+.have{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:clamp(24px,4vw,64px);background:var(--surface);padding:clamp(20px,2.4vw,32px);margin-top:6px}
+.have h3{font-size:var(--s-m);letter-spacing:-.02em}
+.field{display:grid;gap:8px}
+.field+.field{margin-top:16px}
+.field label{font-size:var(--s-s);font-weight:600}
+.field small{font-size:var(--s-s);color:var(--ink-2)}
+input[type=text],input[type=password],input[type=url],select,textarea{width:100%;font:400 var(--s-b)/1.4 var(--f);color:var(--ink);background:var(--ground);border:2px solid transparent;border-radius:0;padding:12px 14px;transition:border-color .2s var(--ease)}
+input:focus,select:focus,textarea:focus{outline:0;border-color:var(--accent)}
+textarea{min-height:88px;resize:vertical}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 24px}
+.grid2 .full{grid-column:1/-1}
+.panel{background:var(--surface);padding:clamp(20px,2.4vw,32px)}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:clamp(24px,4vw,64px)}
+.steps-text{display:grid;gap:18px;align-content:start}
+.steps-text p{max-width:44ch}
+table{width:100%;border-collapse:collapse;font-size:var(--s-s)}
+th{text-align:left;font-weight:600;padding:12px 16px;background:var(--surface-2)}
+td{padding:16px;vertical-align:top;border-top:1px solid var(--surface-2);background:var(--surface)}
+td .name{font-size:var(--s-m);font-weight:700;letter-spacing:-.02em}
+td .tools{display:flex;gap:8px;flex-wrap:wrap}
+.empty{background:var(--surface);padding:clamp(24px,3vw,40px);font-size:var(--s-m);max-width:none}
+.test{display:grid;grid-template-columns:200px minmax(0,1fr);gap:20px;margin-top:14px;align-items:center}
+.test img{width:200px;height:200px;object-fit:cover;display:block;background:var(--surface-2)}
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--ink);color:var(--ground);transform:translateY(110%);transition:transform .35s var(--ease)}
+.dock.on{transform:none}
+.dock .wrap{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:center;padding-top:18px;padding-bottom:18px}
+.dock .now{font-size:var(--s-m);font-weight:600;letter-spacing:-.01em}
+.dock .log{font-size:var(--s-s);color:#c9ccc5;max-height:7.5em;overflow:auto;margin-top:6px;white-space:pre-wrap}
+.dock .meter{height:6px;background:#2a2c28;margin-top:12px}
+.dock .meter i{display:block;height:100%;width:0;background:var(--accent);transition:width .4s var(--ease)}
+.dock.err .now{color:#ffb4ab}
+.note{font-size:var(--s-s);color:var(--ink-2)}
+.ok{color:var(--ok);font-weight:600}
+.danger-zone{background:var(--danger);color:#fff;padding:clamp(24px,3vw,48px);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,4vw,64px);align-items:end}
+.danger-zone h2{color:#fff}
+.danger-zone input{background:#fff}
+.danger-zone .btn{background:#fff;color:var(--danger)}
+footer{padding:var(--gap) 0 140px}
+footer .big{font-size:clamp(56px,13vw,200px);line-height:.85;letter-spacing:-.06em;font-weight:700}
+footer .paths{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:32px;font-size:var(--s-s);color:var(--ink-2);word-break:break-all}
+.shots{padding-top:clamp(48px,6vw,88px)}
+.shots .strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.shots figure{margin:0;background:var(--surface);aspect-ratio:1/1;overflow:hidden}
+.shots img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s var(--ease)}
+.shots figure:hover img{transform:scale(1.04)}
+.shots p{margin-top:16px;font-size:var(--s-s);color:var(--ink-2)}
+.rise{opacity:0;transform:translateY(24px);transition:opacity .6s var(--ease),transform .6s var(--ease)}
+.rise.in{opacity:1;transform:none}
+@media (max-width:900px){
+  .hero,.head,.row,.have,.split,.danger-zone,.grid2{grid-template-columns:minmax(0,1fr)}
+  .bar nav{display:none}
+  .machine .nums{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .test{grid-template-columns:minmax(0,1fr)}
+  .shots .strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+  footer .paths{grid-template-columns:minmax(0,1fr)}
+  table,thead,tbody,tr,td,th{display:block}
+  thead{display:none}
+  td{border-top:0}
+  tr+tr td:first-child{margin-top:6px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;scroll-behavior:auto!important}
+  .rise{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="wrap">
+    <a class="mark" href="#top">imagegen-cc</a>
+    <nav aria-label="Sections">
+      <a href="#models">Local models</a>
+      <a href="#api">Online service</a>
+      <a href="#comfy">ComfyUI</a>
+      <a href="#backends">Your backends</a>
+      <a href="#settings">Settings</a>
+    </nav>
+    <span class="status" id="status" aria-live="polite">Reading this computer</span>
+  </div>
+</header>
+
+<main class="wrap" id="top">
+  <div class="hero">
+    <div class="rise">
+      <h1>Give Claude a camera</h1>
+      <p class="lead">Pick an image model that runs on this computer, or connect an online service. Claude then makes and edits pictures when you ask.</p>
+      <div class="actions">
+        <a class="btn" href="#models" id="cta" style="display:inline-flex;align-items:center;text-decoration:none">See models for this PC</a>
+        <a class="btn quiet" href="#api" style="display:inline-flex;align-items:center;text-decoration:none">Use an online service</a>
+      </div>
+    </div>
+    <div class="machine rise" aria-label="This computer">
+      <div class="gpu" id="gpu">Checking the graphics card</div>
+      <div class="nums">
+        <div><div class="num" id="vram">–</div><div class="unit">GB graphics memory</div></div>
+        <div><div class="num" id="ram">–</div><div class="unit">GB system memory</div></div>
+        <div><div class="num" id="disk">–</div><div class="unit">GB free disk</div></div>
+      </div>
+      <div class="eng" id="eng">Engine: not installed yet</div>
+    </div>
+  </div>
+
+  <div class="shots rise" id="shots" hidden aria-label="Recent pictures">
+    <div class="strip" id="strip"></div>
+    <p id="shots-note">The latest pictures Claude made on this computer.</p>
+  </div>
+
+  <section id="models" aria-labelledby="h-models">
+    <div class="head rise">
+      <h2 id="h-models">Models that run on this PC</h2>
+      <p>The highlighted model fits your graphics card best. Sizes that need more memory than you have are switched off. Install downloads the engine and the model, checks every file, and makes the model ready for Claude.</p>
+    </div>
+    <div class="rows" id="recipes"></div>
+    <div class="have rise">
+      <div>
+        <h3>Already have model files?</h3>
+        <p class="note" style="margin-top:8px">Give a folder, for example your ComfyUI models folder. Files with the same name and size are used where they are, so nothing is downloaded twice.</p>
+      </div>
+      <div>
+        <div class="field"><label for="search">Folder to search</label><input type="text" id="search" placeholder="C:\AI\ComfyUI\models" autocomplete="off" spellcheck="false"></div>
+        <details style="margin-top:16px">
+          <summary style="cursor:pointer;font-size:var(--s-s);font-weight:600">Use one specific file for a part</summary>
+          <div class="grid2" style="margin-top:14px">
+            <div class="field"><label for="l-diffusion">Image model file</label><input type="text" id="l-diffusion" spellcheck="false"></div>
+            <div class="field"><label for="l-llm">Text encoder file</label><input type="text" id="l-llm" spellcheck="false"></div>
+            <div class="field"><label for="l-vae">VAE file</label><input type="text" id="l-vae" spellcheck="false"></div>
+            <div class="field"><label for="l-llm_vision">Vision file (for editing)</label><input type="text" id="l-llm_vision" spellcheck="false"></div>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section id="api" aria-labelledby="h-api">
+    <div class="split">
+      <div class="steps-text rise">
+        <h2 id="h-api">Use an online image service</h2>
+        <p>Any service with an OpenAI-compatible images endpoint works. Enter its base address, your key, and the model name from the service's documentation.</p>
+        <p class="note">The key goes to your operating system's password store. It never appears in Claude's conversation.</p>
+      </div>
+      <form class="panel rise" id="f-api" autocomplete="off">
+        <div class="grid2">
+          <div class="field"><label for="a-name">Name</label><input type="text" id="a-name" value="online" required></div>
+          <div class="field"><label for="a-model">Model</label><input type="text" id="a-model" placeholder="gpt-image-1"></div>
+          <div class="field full"><label for="a-url">Base address</label><input type="url" id="a-url" placeholder="https://api.example.com/v1" required></div>
+          <div class="field full"><label for="a-key">API key</label><input type="password" id="a-key" placeholder="Paste the key"></div>
+        </div>
+        <details style="margin-top:18px">
+          <summary style="cursor:pointer;font-size:var(--s-s);font-weight:600">Custom settings</summary>
+          <div class="grid2" style="margin-top:14px">
+            <div class="field"><label for="a-header">Key header</label><input type="text" id="a-header" value="Authorization"></div>
+            <div class="field"><label for="a-prefix">Key prefix</label><input type="text" id="a-prefix" value="Bearer "></div>
+            <div class="field"><label for="a-kind">Protocol</label><select id="a-kind"><option value="openai">OpenAI images API</option><option value="sdcpp">stable-diffusion.cpp server</option></select></div>
+            <div class="field full"><label for="a-extra">Extra request fields (JSON)</label><textarea id="a-extra" placeholder='{"quality": "high", "output_format": "webp"}'></textarea></div>
+          </div>
+        </details>
+        <div class="actions" style="margin-top:24px"><button class="btn" type="submit">Save service</button></div>
+      </form>
+    </div>
+  </section>
+
+  <section id="comfy" aria-labelledby="h-comfy">
+    <div class="split">
+      <div class="steps-text rise">
+        <h2 id="h-comfy">Use your own ComfyUI</h2>
+        <p>Already running ComfyUI with a fast setup? Connect it and Claude uses it at full speed. Load the model lists, pick Qwen-Image 2.1 files, and save. Or point to your own workflow exported with Workflow, Export (API), with {{prompt}} where the text goes.</p>
+      </div>
+      <form class="panel rise" id="f-comfy" autocomplete="off">
+        <div class="grid2">
+          <div class="field"><label for="c-name">Name</label><input type="text" id="c-name" value="comfyui" required></div>
+          <div class="field"><label for="c-url">ComfyUI address</label><input type="url" id="c-url" value="http://127.0.0.1:8188" required></div>
+        </div>
+        <div class="actions" style="margin-top:18px"><button class="btn quiet" type="button" id="c-load">Load model lists</button></div>
+        <div class="grid2" id="c-picks" style="margin-top:18px" hidden>
+          <div class="field full"><label for="c-unet">Image model</label><select id="c-unet"></select></div>
+          <div class="field"><label for="c-clip">Text encoder</label><select id="c-clip"></select></div>
+          <div class="field"><label for="c-vae">VAE</label><select id="c-vae"></select></div>
+          <div class="field"><label for="c-steps">Steps</label><input type="text" id="c-steps" value="30" inputmode="numeric"></div>
+          <div class="field"><label for="c-cfg">Guidance</label><input type="text" id="c-cfg" value="3.5" inputmode="decimal"></div>
+        </div>
+        <div class="field" style="margin-top:18px"><label for="c-wf">Or your API workflow file</label><input type="text" id="c-wf" placeholder="C:\AI\workflows\my-flow.api.json" spellcheck="false"></div>
+        <div class="actions" style="margin-top:24px"><button class="btn" type="submit">Save ComfyUI</button></div>
+      </form>
+    </div>
+  </section>
+
+  <section id="backends" aria-labelledby="h-backends">
+    <div class="head rise">
+      <h2 id="h-backends">Your backends</h2>
+      <p>Claude uses the default backend unless you name another one. Test makes one small real image so you can see that everything works. With an online service a test can cost money.</p>
+    </div>
+    <div id="blist" class="rise"></div>
+  </section>
+
+  <section id="settings" aria-labelledby="h-settings">
+    <div class="split">
+      <div class="steps-text rise">
+        <h2 id="h-settings">Settings</h2>
+        <p>Pictures are saved outside the plugin folder, so removing the plugin never deletes your images.</p>
+      </div>
+      <div class="panel rise">
+        <form id="f-out" class="field"><label for="s-out">Save pictures to</label><input type="text" id="s-out" spellcheck="false"><small>Leave empty for the default Pictures folder.</small><div class="actions" style="margin-top:6px"><button class="btn quiet small" type="submit">Save folder</button></div></form>
+        <form id="f-hf" class="field" style="margin-top:28px"><label for="s-hf">Hugging Face token</label><input type="password" id="s-hf" placeholder="Only needed for gated models"><small id="hf-state">Not set.</small><div class="actions" style="margin-top:6px"><button class="btn quiet small" type="submit">Save token</button></div></form>
+      </div>
+    </div>
+  </section>
+
+  <section id="remove" aria-labelledby="h-remove">
+    <div class="danger-zone rise">
+      <div>
+        <h2 id="h-remove">Remove everything</h2>
+        <p style="margin-top:16px;max-width:46ch">Stops the engine, deletes downloaded models and the engine, deletes saved keys, then removes the plugin from Claude Code. Your own model files and your pictures stay.</p>
+      </div>
+      <form id="f-un" class="field">
+        <label for="u-confirm">Type uninstall to confirm</label>
+        <input type="text" id="u-confirm" autocomplete="off">
+        <div class="actions" style="margin-top:6px"><button class="btn" type="submit">Remove imagegen-cc</button></div>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">
+  <div class="big">imagegen-cc</div>
+  <div class="paths">
+    <div>Pictures<br><span id="p-out">–</span></div>
+    <div>Plugin data<br><span id="p-data">–</span></div>
+    <div>Version <span id="p-ver">–</span>. Models: Apache-2.0 unless noted.</div>
+  </div>
+</footer>
+
+<div class="dock" id="dock" role="status" aria-live="polite">
+  <div class="wrap">
+    <div>
+      <div class="now" id="d-now">Working</div>
+      <div class="log" id="d-log"></div>
+      <div class="meter"><i id="d-bar"></i></div>
+    </div>
+    <button class="btn quiet small" type="button" id="d-close">Hide</button>
+  </div>
+</div>
+
+<script>
+const q=new URLSearchParams(location.search);
+if(q.get("t")){sessionStorage.setItem("igc-t",q.get("t"));history.replaceState(null,"",location.pathname+location.hash)}
+const T=sessionStorage.getItem("igc-t")||"";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const gb=b=>(b/1e9).toFixed(b>=1e10?0:1)+" GB";
+let S=null,busy=false;
+async function api(path,body,extra){
+  const r=await fetch(path,{method:body===undefined?"GET":"POST",headers:{"x-token":T,"content-type":"application/json",...(extra||{})},body:body===undefined?undefined:JSON.stringify(body)});
+  const t=await r.text();
+  if(!r.ok)throw new Error(t||r.statusText);
+  return t?JSON.parse(t):{};
+}
+const dock=$("#dock");
+function show(now,lines,err){dock.classList.add("on");dock.classList.toggle("err",!!err);$("#d-now").textContent=now;$("#d-log").textContent=(lines||[]).slice(-6).join("\n");const m=/\((\d+)%\)/.exec((lines||[]).at(-1)||"");$("#d-bar").style.width=m?m[1]+"%":(err?"0":"")}
+$("#d-close").onclick=()=>dock.classList.remove("on");
+async function follow(id,title){
+  busy=true;
+  for(;;){
+    const j=await api("/api/job/"+id);
+    show(j.done?(j.error?"Stopped":"Done"):title,j.lines,j.error);
+    if(j.done){busy=false;if(j.error){show("Stopped: "+j.error.split("\n")[0],[...j.lines,j.error],true);throw new Error(j.error)}$("#d-bar").style.width="100%";return j.result}
+    await new Promise(r=>setTimeout(r,500));
+  }
+}
+function fail(e){show("Error",[String(e.message||e)],true)}
+function renderMachine(){
+  const g=S.hw.gpus.find(x=>x.vendor!=="other");
+  $("#gpu").textContent=g?g.name:"No supported graphics card found";
+  $("#vram").textContent=S.vram_gb||"0";$("#ram").textContent=S.ram_gb;$("#disk").textContent=Math.floor(S.hw.disk_free_mb/1024);
+  $("#eng").textContent=S.engine?`Engine: ${S.engine.kind} ready${S.engine.gfx?" ("+S.engine.gfx+")":""}`:`Engine: not installed yet. It installs with the first model (${S.engine_order.join(", then ")})`;
+  const n=S.backends.length;
+  $("#status").textContent=n?`${n} backend${n>1?"s":""}. Default: ${S.default_backend}`:"No backend yet";
+}
+function renderRecipes(){
+  const box=$("#recipes");
+  const order=[...S.recipes].sort((a,b)=>(b.best?1:0)-(a.best?1:0));
+  const top=order.find(r=>r.best);
+  box.innerHTML=order.map(r=>{
+    const pick=r.best||r.variants.at(-1).id;
+    const any=r.variants.some(v=>v.fits);
+    return `<div class="row rise${top&&r.id===top.id?" best":""}" data-id="${esc(r.id)}">
+      <div><h3>${esc(r.name)}</h3><p class="about">${esc(r.about)}</p><p class="meta">${esc(r.license)}${r.edit?". Can edit pictures":""}</p></div>
+      <div><div class="seg" role="radiogroup" aria-label="Size of ${esc(r.name)}">${r.variants.map(v=>`<label><input type="radio" name="v-${esc(r.id)}" value="${esc(v.id)}" ${v.id===pick?"checked":""} ${v.fits?"":"disabled"}><span>${esc(v.label)}, ${gb(v.bytes)}</span></label>`).join("")}</div>
+      <p class="meta">${any?"Download size includes everything this model needs.":"Needs at least "+Math.min(...r.variants.map(v=>v.min_vram_gb))+" GB graphics memory."}</p></div>
+      <div><button class="btn" type="button" data-install="${esc(r.id)}" ${any?"":"disabled"}>Install</button></div>
+    </div>`}).join("");
+  box.querySelectorAll("[data-install]").forEach(b=>b.onclick=()=>install(b.dataset.install));
+  reveal();
+}
+function renderBackends(){
+  const box=$("#blist");
+  if(!S.backends.length){box.innerHTML=`<p class="empty">No backend yet. Install a local model above, or connect a service or ComfyUI.</p>`;return}
+  box.innerHTML=`<table><thead><tr><th>Name</th><th>What it is</th><th>Default</th><th>Actions</th></tr></thead><tbody>${S.backends.map(b=>{
+    const what=b.kind==="local"?`${esc(b.recipe)} (${esc(b.variant)}) on the ${esc(b.engine)} engine`:b.kind==="comfyui"?`ComfyUI at ${esc(b.base_url)}`:`${esc(b.base_url)}${b.model?", model "+esc(b.model):""}. Key: ${b.api_key==="none"?"none":"saved"}`;
+    const def=S.default_backend===b.name;
+    return `<tr><td><div class="name">${esc(b.name)}</div></td><td>${what}${b.edit?"<br><span class='note'>Can edit pictures</span>":""}<div class="test" id="t-${esc(b.name)}" hidden><img alt="Test picture from ${esc(b.name)}"><div class="note"></div></div></td>
+    <td>${def?"<span class='ok'>Default</span>":`<button class="btn quiet small" data-def="${esc(b.name)}">Make default</button>`}</td>
+    <td><div class="tools"><button class="btn small" data-test="${esc(b.name)}">Test</button><button class="btn quiet small" data-rm="${esc(b.name)}">Remove</button></div></td></tr>`}).join("")}</tbody></table>`;
+  box.querySelectorAll("[data-def]").forEach(b=>b.onclick=async()=>{try{await api("/api/default",{name:b.dataset.def});await load()}catch(e){fail(e)}});
+  box.querySelectorAll("[data-rm]").forEach(b=>b.onclick=async()=>{if(!confirm(`Remove ${b.dataset.rm}? Downloaded files only it uses are deleted.`))return;try{await api("/api/remove",{name:b.dataset.rm});await load()}catch(e){fail(e)}});
+  box.querySelectorAll("[data-test]").forEach(b=>b.onclick=()=>test(b.dataset.test,b));
+}
+async function test(name,btn){
+  if(busy)return;btn.disabled=true;
+  try{const j=await api("/api/test",{name});const r=await follow(j.job,"Making a test picture with "+name);const box=$("#t-"+CSS.escape(name));box.hidden=false;box.querySelector("img").src=r.image;box.querySelector(".note").textContent=`Made in ${(r.ms/1000).toFixed(1)} s. Claude can now use ${name}.`}
+  catch(e){}finally{btn.disabled=false}
+}
+async function install(id){
+  if(busy)return;
+  const v=document.querySelector(`input[name="v-${CSS.escape(id)}"]:checked`)?.value;
+  const links={};["diffusion","llm","vae","llm_vision"].forEach(k=>{const x=$("#l-"+k).value.trim();if(x)links[k]=x});
+  const search=$("#search").value.trim();
+  const name=S.backends.some(b=>b.name==="local")?id.replace(/[^a-z0-9]+/gi,"-").slice(0,40):"local";
+  try{const j=await api("/api/local",{name,recipe:id,variant:v,search:search?[search]:[],links});const r=await follow(j.job,"Installing "+id);show(r.message,["Next: press Test in Your backends."]);await load();location.hash="#backends"}
+  catch(e){}
+}
+$("#f-api").onsubmit=async e=>{e.preventDefault();try{const r=await api("/api/api",{name:$("#a-name").value,base_url:$("#a-url").value,model:$("#a-model").value,key:$("#a-key").value,auth_header:$("#a-header").value,auth_prefix:$("#a-prefix").value,kind:$("#a-kind").value,extra:$("#a-extra").value});$("#a-key").value="";show("Service saved",[r.key_store?"Key saved in the "+(r.key_store==="keychain"?"system password store":"plugin folder (no password store on this system)"):"No key saved."]);await load()}catch(x){fail(x)}};
+$("#c-load").onclick=async()=>{try{const r=await api("/api/comfyui/models?url="+encodeURIComponent($("#c-url").value));const fill=(id,list,want)=>{$(id).innerHTML=list.map(x=>`<option ${want&&want.test(x)?"selected":""}>${esc(x)}</option>`).join("")};fill("#c-unet",r.unet,/qwen_image_2\.1(?!.*turbo)/i);fill("#c-clip",r.clip,/qwen3vl/i);fill("#c-vae",r.vae,/qwen_image_2\.1_vae/i);$("#c-picks").hidden=false;show(r.qwen21?"ComfyUI found with Qwen-Image 2.1 support":"ComfyUI found, but Qwen-Image 2.1 nodes are missing. Use your own workflow file",[])}catch(x){fail(x)}};
+$("#f-comfy").onsubmit=async e=>{e.preventDefault();const wf=$("#c-wf").value.trim();try{await api("/api/comfyui",{name:$("#c-name").value,base_url:$("#c-url").value,workflow_path:wf||null,unet:wf?null:$("#c-unet").value||null,clip:wf?null:$("#c-clip").value||null,vae:wf?null:$("#c-vae").value||null,steps:+$("#c-steps").value||30,guidance:+$("#c-cfg").value||3.5});show("ComfyUI saved",["Press Test in Your backends."]);await load();location.hash="#backends"}catch(x){fail(x)}};
+$("#f-out").onsubmit=async e=>{e.preventDefault();try{const r=await api("/api/settings",{output_dir:$("#s-out").value});show("Folder saved",[r.output_dir]);await load()}catch(x){fail(x)}};
+$("#f-hf").onsubmit=async e=>{e.preventDefault();try{await api("/api/hf-token",{token:$("#s-hf").value});$("#s-hf").value="";show("Token saved",[]);await load()}catch(x){fail(x)}};
+$("#f-un").onsubmit=async e=>{e.preventDefault();if($("#u-confirm").value.trim()!=="uninstall"){fail("Type uninstall to confirm");return}try{const r=await api("/api/uninstall",{},{"x-confirm":"uninstall"});document.body.innerHTML=`<main class="wrap" style="padding-top:20vh"><h1>Removed</h1><p class="lead">${r.plugin_uninstall_started?"Claude Code is removing the plugin. You can close this tab.":"Data deleted. Run /plugin in Claude Code to remove the plugin."}</p></main>`}catch(x){fail(x)}};
+let io;function reveal(){io=io||new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){const d=+(e.target.dataset.d||0);setTimeout(()=>e.target.classList.add("in"),d);io.unobserve(e.target)}}),{rootMargin:"0px 0px -8% 0px"});document.querySelectorAll(".rise:not(.in)").forEach((el,i)=>{el.dataset.d=(i%4)*75;io.observe(el)})}
+async function shots(){try{const r=await api("/api/recent");const box=$("#shots");if(!r.files.length){box.hidden=true;return}$("#strip").innerHTML=r.files.slice(0,8).map(f=>`<figure><img loading="lazy" alt="Picture made by Claude: ${esc(f.split("/").pop().replace(/^\d+-\d+-/,"").replace(/\.\w+$/,"").replace(/-/g," "))}" src="/api/img?t=${encodeURIComponent(T)}&f=${encodeURIComponent(f)}"></figure>`).join("");box.hidden=false;reveal()}catch(e){}}
+async function load(){shots();S=await api("/api/state");renderMachine();renderRecipes();renderBackends();$("#s-out").value=S.output_dir||"";$("#p-out").textContent=S.output_dir;$("#p-data").textContent=S.data_dir;$("#p-ver").textContent=S.version;$("#hf-state").textContent=S.hf_token?"Saved.":"Not set.";reveal()}
+reveal();load().catch(e=>{$("#status").textContent="Cannot reach the plugin";fail(e)});
+</script>
+</body>
+</html>

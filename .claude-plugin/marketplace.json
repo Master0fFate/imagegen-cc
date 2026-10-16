@@ -1,0 +1,15 @@
+{
+  "name": "imagegen-cc",
+  "description": "Image generation for Claude Code with local models, ComfyUI or image APIs",
+  "owner": {
+    "name": "Master0fFate",
+    "url": "https://github.com/Master0fFate"
+  },
+  "plugins": [
+    {
+      "name": "imagegen-cc",
+      "source": "./plugin",
+      "description": "Image generation and editing for Claude Code, with local models or any OpenAI-compatible image API"
+    }
+  ]
+}

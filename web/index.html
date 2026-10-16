@@ -3,309 +3,439 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="light">
+<meta name="color-scheme" content="dark">
 <title>Image generation setup</title>
 <style>
+@font-face{font-family:"Geist";src:url(/geist.woff2) format("woff2");font-weight:400 700;font-display:swap}
+@font-face{font-family:"Geist Mono";src:url(/geist-mono.woff2) format("woff2");font-weight:400 600;font-display:swap}
 :root{
-  --ground:#eef0ec;--surface:#e1e4dd;--surface-2:#d3d7ce;--ink:#0e0f0d;--ink-2:#41443e;
-  --accent:#0a3dff;--accent-ink:#ffffff;--danger:#a3231b;--ok:#0b6b2f;
-  --f:"Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
-  --s-xl:clamp(44px,6.4vw,92px);--s-l:clamp(28px,3vw,40px);--s-m:20px;--s-b:17px;--s-s:15px;
-  --pad:clamp(16px,3vw,32px);--gap:clamp(96px,11vw,168px);
-  --ease:cubic-bezier(.2,.7,.2,1);
+  --bg:#000;--bg-2:#0a0a0a;--gray-1:#111;--gray-2:#1a1a1a;--gray-3:#262626;
+  --line:#242424;--line-2:#333;
+  --text:#ededed;--muted:#a1a1a1;--faint:#6f6f6f;
+  --primary:#ededed;--on-primary:#000;--pc:#111;--pc-line:#3d3d3d;
+  --ok:#3ecf8e;--ok-c:rgba(62,207,142,.12);--warn:#f5a524;--err:#ff6161;--err-c:rgba(255,97,97,.08);
+  --sans:"Geist",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"Geist Mono",ui-monospace,Consolas,monospace;
+  --spring:cubic-bezier(.34,1.56,.64,1);
+  --spring-soft:cubic-bezier(.22,1.25,.36,1);
+  --ease:cubic-bezier(.2,.8,.2,1);
 }
-*{box-sizing:border-box;margin:0}
+*{box-sizing:border-box;margin:0;padding:0}
 [hidden]{display:none!important}
-html{background:var(--ground);color:var(--ink);font:400 var(--s-b)/1.55 var(--f);-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
+html{background:var(--bg);color:var(--text);font:400 14px/1.55 var(--sans);-webkit-font-smoothing:antialiased;scrollbar-gutter:stable}
 body{min-height:100svh}
-a{color:inherit}
-::selection{background:var(--accent);color:var(--accent-ink)}
-:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
-.wrap{max-width:1360px;margin:0 auto;padding:0 var(--pad)}
-.bar{position:sticky;top:0;z-index:5;background:var(--ground)}
-.bar .wrap{display:flex;align-items:center;gap:28px;height:68px}
-.mark{font-weight:700;font-size:var(--s-m);letter-spacing:-.02em;text-decoration:none}
-.bar nav{display:flex;gap:22px;margin-left:auto}
-.bar nav a{text-decoration:none;font-size:var(--s-s);color:var(--ink-2);transition:color .2s var(--ease)}
-.bar nav a:hover{color:var(--ink)}
-.status{font-size:var(--s-s);color:var(--ink)}
-.hero{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:clamp(32px,5vw,80px);padding:clamp(48px,7vw,104px) 0 0;align-items:end}
-h1{font-size:var(--s-xl);line-height:.95;letter-spacing:-.045em;font-weight:700;max-width:11ch}
-.lead{font-size:var(--s-m);line-height:1.45;max-width:36ch;margin-top:28px}
-.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:36px}
-.btn{appearance:none;border:0;border-radius:0;font:600 var(--s-b)/1 var(--f);padding:0 24px;height:52px;cursor:pointer;background:var(--accent);color:var(--accent-ink);transition:transform .12s var(--ease),background-color .2s var(--ease)}
-.btn:hover{background:#0030d6}
-.btn:active{transform:scale(.97)}
-.btn[disabled]{background:var(--surface-2);color:var(--ink-2);cursor:not-allowed}
-.btn.quiet{background:var(--surface);color:var(--ink)}
-.btn.quiet:hover{background:var(--surface-2)}
-.btn.small{height:40px;padding:0 16px;font-size:var(--s-s)}
-.btn.danger{background:var(--danger)}
-.machine{background:var(--ink);color:var(--ground);padding:clamp(24px,3vw,40px)}
-.machine .gpu{font-size:var(--s-l);line-height:1.05;letter-spacing:-.03em;font-weight:700}
-.machine .nums{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:40px}
-.machine .num{font-size:var(--s-xl);line-height:.9;letter-spacing:-.05em;font-weight:700}
-.machine .unit{font-size:var(--s-s);color:#b9bcb5;margin-top:10px}
-.machine .eng{margin-top:36px;font-size:var(--s-s);color:#d8dbd4}
-section{padding-top:var(--gap)}
-.head{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:clamp(24px,4vw,64px);align-items:end;margin-bottom:40px}
-h2{font-size:var(--s-l);line-height:1.02;letter-spacing:-.035em;font-weight:700;max-width:16ch}
-.head p{max-width:52ch}
-.rows{display:grid;gap:6px}
-.row{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1.5fr) auto;gap:clamp(16px,3vw,48px);align-items:center;background:var(--surface);padding:clamp(20px,2.4vw,32px)}
-.row.best{background:var(--ink);color:var(--ground)}
-.row h3{font-size:var(--s-m);letter-spacing:-.02em;line-height:1.2}
-.row .about{margin-top:6px;font-size:var(--s-s)}
-.row.best .about,.row.best .meta{color:#d8dbd4}
-.seg{display:flex;flex-wrap:wrap;gap:6px}
-.seg label{position:relative;cursor:pointer}
-.seg input{position:absolute;opacity:0;pointer-events:none}
-.seg span{display:block;padding:10px 14px;background:var(--surface-2);color:var(--ink);font-size:var(--s-s);transition:background-color .2s var(--ease)}
-.row.best .seg span{background:#2a2c28;color:var(--ground)}
-.seg input:checked+span{background:var(--accent);color:var(--accent-ink)}
-.seg input:disabled+span{opacity:.45;cursor:not-allowed}
-.seg input:focus-visible+span{outline:3px solid var(--accent);outline-offset:2px}
-.meta{font-size:var(--s-s);color:var(--ink-2);margin-top:10px}
-.have{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:clamp(24px,4vw,64px);background:var(--surface);padding:clamp(20px,2.4vw,32px);margin-top:6px}
-.have h3{font-size:var(--s-m);letter-spacing:-.02em}
-.field{display:grid;gap:8px}
-.field+.field{margin-top:16px}
-.field label{font-size:var(--s-s);font-weight:600}
-.field small{font-size:var(--s-s);color:var(--ink-2)}
-input[type=text],input[type=password],input[type=url],select,textarea{width:100%;font:400 var(--s-b)/1.4 var(--f);color:var(--ink);background:var(--ground);border:2px solid transparent;border-radius:0;padding:12px 14px;transition:border-color .2s var(--ease)}
-input:focus,select:focus,textarea:focus{outline:0;border-color:var(--accent)}
-textarea{min-height:88px;resize:vertical}
-.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 24px}
-.grid2 .full{grid-column:1/-1}
-.panel{background:var(--surface);padding:clamp(20px,2.4vw,32px)}
-.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:clamp(24px,4vw,64px)}
-.steps-text{display:grid;gap:18px;align-content:start}
-.steps-text p{max-width:44ch}
-table{width:100%;border-collapse:collapse;font-size:var(--s-s)}
-th{text-align:left;font-weight:600;padding:12px 16px;background:var(--surface-2)}
-td{padding:16px;vertical-align:top;border-top:1px solid var(--surface-2);background:var(--surface)}
-td .name{font-size:var(--s-m);font-weight:700;letter-spacing:-.02em}
-td .tools{display:flex;gap:8px;flex-wrap:wrap}
-.empty{background:var(--surface);padding:clamp(24px,3vw,40px);font-size:var(--s-m);max-width:none}
-.test{display:grid;grid-template-columns:200px minmax(0,1fr);gap:20px;margin-top:14px;align-items:center}
-.test img{width:200px;height:200px;object-fit:cover;display:block;background:var(--surface-2)}
-.dock{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--ink);color:var(--ground);transform:translateY(110%);transition:transform .35s var(--ease)}
-.dock.on{transform:none}
-.dock .wrap{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:center;padding-top:18px;padding-bottom:18px}
-.dock .now{font-size:var(--s-m);font-weight:600;letter-spacing:-.01em}
-.dock .log{font-size:var(--s-s);color:#c9ccc5;max-height:7.5em;overflow:auto;margin-top:6px;white-space:pre-wrap}
-.dock .meter{height:6px;background:#2a2c28;margin-top:12px}
-.dock .meter i{display:block;height:100%;width:0;background:var(--accent);transition:width .4s var(--ease)}
-.dock.err .now{color:#ffb4ab}
-.note{font-size:var(--s-s);color:var(--ink-2)}
-.ok{color:var(--ok);font-weight:600}
-.danger-zone{background:var(--danger);color:#fff;padding:clamp(24px,3vw,48px);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,4vw,64px);align-items:end}
-.danger-zone h2{color:#fff}
-.danger-zone input{background:#fff}
-.danger-zone .btn{background:#fff;color:var(--danger)}
-footer{padding:var(--gap) 0 140px}
-footer .big{font-size:clamp(56px,13vw,200px);line-height:.85;letter-spacing:-.06em;font-weight:700}
-footer .paths{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:32px;font-size:var(--s-s);color:var(--ink-2);word-break:break-all}
-.shots{padding-top:clamp(48px,6vw,88px)}
-.shots .strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
-.shots figure{margin:0;background:var(--surface);aspect-ratio:1/1;overflow:hidden}
-.shots img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s var(--ease)}
-.shots figure:hover img{transform:scale(1.04)}
-.shots p{margin-top:16px;font-size:var(--s-s);color:var(--ink-2)}
-.rise{opacity:0;transform:translateY(24px);transition:opacity .6s var(--ease),transform .6s var(--ease)}
-.rise.in{opacity:1;transform:none}
-@media (max-width:900px){
-  .hero,.head,.row,.have,.split,.danger-zone,.grid2{grid-template-columns:minmax(0,1fr)}
-  .bar nav{display:none}
-  .machine .nums{grid-template-columns:repeat(3,minmax(0,1fr))}
-  .test{grid-template-columns:minmax(0,1fr)}
-  .shots .strip{grid-template-columns:repeat(2,minmax(0,1fr))}
-  footer .paths{grid-template-columns:minmax(0,1fr)}
-  table,thead,tbody,tr,td,th{display:block}
-  thead{display:none}
-  td{border-top:0}
-  tr+tr td:first-child{margin-top:6px}
+a{color:inherit;text-decoration:none}
+::selection{background:var(--primary);color:var(--on-primary)}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.mono{font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.faint{color:var(--faint)}
+.small{font-size:12px}
+.wrap{max-width:1200px;margin:0 auto;padding:0 24px}
+
+.top{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;gap:12px;height:60px}
+.brand{font-weight:600;font-size:15px;letter-spacing:-.02em;white-space:nowrap}
+.slash{color:var(--line-2);font-size:20px;font-weight:300}
+.crumb{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip{display:inline-flex;align-items:center;height:22px;padding:0 8px;border:1px solid var(--line-2);border-radius:999px;color:var(--muted);font-size:12px}
+.status{margin-left:auto;display:inline-flex;align-items:center;gap:8px;color:var(--muted);white-space:nowrap}
+.status::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--faint)}
+.status[data-state=ok]::before{background:var(--ok)}
+.status[data-state=warn]::before{background:var(--warn)}
+.status[data-state=err]::before{background:var(--err)}
+.tabs{position:relative;display:flex;gap:2px;height:46px;align-items:center;overflow-x:auto;scrollbar-width:none}
+.tabs a{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:6px;color:var(--muted);white-space:nowrap;transition:color .15s var(--ease),background-color .15s var(--ease)}
+.tabs a:hover{color:var(--text);background:var(--gray-2)}
+.tabs a[aria-current=page]{color:var(--text)}
+.count{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--gray-3);font:500 11px/1 var(--mono);color:var(--muted)}
+.ind{position:absolute;bottom:-1px;height:2px;border-radius:2px;background:var(--text);transition:left .5s var(--spring-soft),width .5s var(--spring-soft)}
+
+.page-h{display:flex;align-items:flex-end;gap:16px;padding:40px 0 28px}
+.page-h h1{font-size:32px;line-height:1.1;font-weight:600;letter-spacing:-.045em}
+.page-h p{margin-top:6px;color:var(--muted)}
+.page-h .btn{margin-left:auto}
+main{padding-bottom:120px}
+.view{display:grid;gap:16px}
+.view>*{animation:enter .55s var(--spring-soft) both}
+.view>:nth-child(2){animation-delay:50ms}
+.view>:nth-child(3){animation-delay:100ms}
+.view>:nth-child(n+4){animation-delay:150ms}
+@keyframes enter{from{opacity:0;transform:translateY(10px) scale(.99)}}
+
+.card{background:var(--bg-2);border:1px solid var(--line);border-radius:12px;min-width:0}
+.card-h{display:flex;align-items:center;gap:10px;min-height:52px;padding:0 20px;border-bottom:1px solid var(--line)}
+.card-h h2{font-size:14px;font-weight:600}
+.card-h>:last-child:not(h2){margin-left:auto}
+.card-b{padding:24px}
+.card-b>h2{font-size:18px;font-weight:600;letter-spacing:-.02em}
+.card-b>h2+p{margin-top:6px;color:var(--muted)}
+.card-f{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px;padding:10px 24px;border-top:1px solid var(--line);background:var(--bg);border-radius:0 0 12px 12px;color:var(--muted)}
+.link{display:inline-flex;align-items:center;gap:4px;color:var(--muted);font-weight:500;white-space:nowrap;transition:color .15s var(--ease)}
+.link:hover{color:var(--text)}
+
+.pc-main{display:grid;grid-template-columns:auto minmax(0,1fr);gap:40px;align-items:center;padding:28px}
+.cookie{position:relative;width:196px;height:196px;flex:none}
+.cookie svg{position:absolute;inset:0;width:100%;height:100%;transition:transform 1.4s var(--spring-soft)}
+.cookie path{fill:var(--primary)}
+.pc:hover .cookie svg{transform:rotate(40deg) scale(1.03)}
+.cookie-in{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;color:var(--on-primary)}
+.cookie-in .big{font-size:76px;line-height:.9;font-weight:700;letter-spacing:-.06em;font-variant-numeric:tabular-nums}
+.cookie-in span:last-child{margin-top:6px;font:600 12px/1 var(--mono);letter-spacing:.02em}
+.facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px 32px}
+.facts dt{font-size:13px;color:var(--muted)}
+.facts dd{margin-top:4px;font-weight:500;display:flex;align-items:center;gap:8px;min-width:0}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--faint);flex:none}
+.dot.ok{background:var(--ok)}
+.dot.warn{background:var(--warn)}
+
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+.rows>*{display:grid;align-items:center;gap:16px;padding:14px 20px;border-top:1px solid var(--line)}
+.rows>:first-child{border-top:0}
+.brow{grid-template-columns:auto minmax(0,1fr) auto}
+.brow .what{color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brow b{font-weight:500}
+.frow{grid-template-columns:minmax(0,1fr) 120px 84px}
+.frow b{font-weight:500;display:block}
+.frow .muted{font-size:13px}
+.frow .mono{text-align:right;color:var(--muted)}
+.empty{display:grid;justify-items:center;gap:10px;margin:16px;padding:32px 20px;border:1px dashed var(--line-2);border-radius:12px;text-align:center}
+.empty h3{font-size:14px;font-weight:600}
+.empty p{color:var(--muted);max-width:44ch}
+.btns{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:6px}
+
+.wave{display:block;width:100%;height:12px;overflow:visible}
+.wave path{fill:none;stroke:var(--primary);stroke-width:3;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.wave line{stroke:var(--gray-3);stroke-width:3;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.wave.live path{animation:flow .9s linear infinite}
+@keyframes flow{to{transform:translateX(14px)}}
+
+.thumbs{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:12px;padding:20px}
+.thumbs a{display:block;aspect-ratio:1/1;overflow:hidden;border-radius:12px;background:var(--gray-2);transition:border-radius .5s var(--spring),transform .5s var(--spring)}
+.thumbs a:hover{border-radius:32px;transform:scale(1.04)}
+.thumbs img{width:100%;height:100%;object-fit:cover;display:block}
+.empty-in{padding:20px;color:var(--muted)}
+
+.tag{display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:999px;background:var(--gray-2);color:var(--muted);font-size:12px;font-weight:500;white-space:nowrap}
+.tag.accent{background:var(--primary);color:var(--on-primary)}
+.tag.ok{background:var(--ok-c);color:var(--ok)}
+.kind{font:500 12px/1 var(--mono);color:var(--muted)}
+
+.btn{appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 20px;border:1px solid transparent;border-radius:999px;background:var(--text);color:#000;font:500 14px/1 var(--sans);white-space:nowrap;cursor:pointer;transition:border-radius .45s var(--spring),transform .45s var(--spring),background-color .15s var(--ease),border-color .15s var(--ease)}
+.btn:hover{background:#fff}
+.btn:active{border-radius:12px;transform:scale(.96)}
+.btn[disabled]{background:var(--gray-2);color:var(--faint);cursor:not-allowed;transform:none;border-radius:999px}
+.btn.accent{background:var(--primary);color:var(--on-primary)}
+.btn.accent:hover{background:#fff}
+.btn.ghost{background:transparent;border-color:var(--line-2);color:var(--text)}
+.btn.ghost:hover{background:var(--gray-2)}
+.btn.danger{background:var(--err);color:#1a0000}
+.btn.danger:hover{background:#ff7d7d}
+.btn.sm{height:32px;padding:0 14px;font-size:13px}
+.btn.sm:active{border-radius:10px}
+
+.field{display:grid;gap:8px;align-content:start}
+.field label{font-size:13px;font-weight:500;color:var(--muted)}
+.field small{font-size:12px;color:var(--faint)}
+input[type=text],input[type=password],input[type=url],select,textarea{width:100%;height:40px;padding:0 12px;border:1px solid var(--line-2);border-radius:8px;background:var(--bg);color:var(--text);font:400 14px/1.4 var(--sans);transition:border-color .15s var(--ease),box-shadow .15s var(--ease)}
+textarea{height:auto;min-height:92px;padding:10px 12px;resize:vertical;font-family:var(--mono);font-size:13px}
+input::placeholder,textarea::placeholder{color:var(--faint)}
+input:focus,select:focus,textarea:focus{outline:0;border-color:var(--muted);box-shadow:0 0 0 3px rgba(255,255,255,.08)}
+select option{background:var(--bg-2)}
+.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:20px}
+.form .full{grid-column:1/-1}
+details{margin-top:20px}
+summary{display:inline-flex;align-items:center;gap:8px;cursor:pointer;list-style:none;color:var(--muted);font-weight:500;transition:color .15s var(--ease)}
+summary::before{content:"";width:6px;height:6px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(-45deg);transition:transform .35s var(--spring)}
+details[open] summary::before{transform:rotate(45deg)}
+summary:hover{color:var(--text)}
+summary::-webkit-details-marker{display:none}
+details .form{margin-top:16px}
+.split{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:32px;align-items:start}
+.aside{display:grid;gap:22px;padding-top:6px}
+.aside h3{font-size:14px;font-weight:600}
+.aside p{margin-top:4px;color:var(--muted)}
+.aside code{font-family:var(--mono);font-size:12px;padding:2px 6px;border-radius:6px;background:var(--gray-2);color:var(--text)}
+
+.model{padding:24px;display:grid;gap:18px;transition:border-color .2s var(--ease)}
+.model.best{background:var(--pc);border-color:var(--pc-line)}
+.model-h{display:flex;align-items:flex-start;gap:16px}
+.model-h h3{font-size:18px;font-weight:600;letter-spacing:-.02em}
+.model-h .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.model-h p{margin-top:8px;color:var(--muted);max-width:64ch}
+.model-h .btn{margin-left:auto;flex:none}
+.group{display:flex;gap:3px}
+.group label{position:relative;flex:1 1 0;min-width:0;display:grid;align-content:center;gap:2px;min-height:56px;padding:8px 18px;background:var(--gray-2);border-radius:8px;cursor:pointer;transition:border-radius .5s var(--spring),background-color .2s var(--ease),color .2s var(--ease)}
+.group label:first-child{border-radius:28px 8px 8px 28px}
+.group label:last-child{border-radius:8px 28px 28px 8px}
+.group label:only-child{border-radius:28px}
+.group label:hover{background:var(--gray-3)}
+.model.best .group label{background:var(--gray-2)}
+.model.best .group label:hover{background:var(--gray-3)}
+.group input{position:absolute;opacity:0;pointer-events:none}
+.group span{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.group b{font:500 12px/1.2 var(--mono);color:var(--muted)}
+.group label:has(input:checked),.model.best .group label:has(input:checked){border-radius:28px;background:var(--primary);color:var(--on-primary)}
+.group label:has(input:checked) b{color:var(--on-primary)}
+.group label:has(input:disabled){opacity:.35;cursor:not-allowed}
+.group label:has(input:focus-visible){outline:2px solid var(--primary);outline-offset:2px}
+.meter{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:16px}
+.meter .mono{color:var(--muted)}
+
+.table{width:100%;border-collapse:collapse}
+.table th{height:40px;padding:0 20px;border-bottom:1px solid var(--line);font-size:12px;font-weight:500;color:var(--faint);text-align:left;white-space:nowrap}
+.table td{padding:16px 20px;border-top:1px solid var(--line);vertical-align:top}
+.table tr:first-child td{border-top:0}
+.table .name{font-weight:600}
+.table .what{color:var(--muted);word-break:break-word}
+.tools{display:flex;gap:8px;justify-content:flex-end}
+.test{display:flex;gap:14px;align-items:center;margin-top:12px}
+.test img{width:96px;height:96px;object-fit:cover;display:block;border-radius:16px}
+
+.stack{display:grid;gap:16px}
+.kv>div{grid-template-columns:140px minmax(0,1fr)}
+.kv dt{color:var(--muted)}
+.kv dd{word-break:break-all}
+.danger-card{border-color:rgba(255,97,97,.35)}
+.danger-card .card-f{background:var(--err-c);border-top-color:rgba(255,97,97,.25)}
+
+.dock{position:fixed;right:24px;bottom:24px;z-index:10;width:min(400px,calc(100vw - 32px));padding:16px 18px;background:var(--bg-2);border:1px solid var(--line-2);border-radius:20px;box-shadow:0 24px 48px rgba(0,0,0,.6);opacity:0;visibility:hidden;transform:translateY(16px) scale(.96);transition:opacity .25s var(--ease),transform .5s var(--spring),visibility .25s}
+.dock.on{opacity:1;visibility:visible;transform:none}
+.dock-h{display:flex;align-items:flex-start;gap:12px}
+.dock .now{font-weight:600}
+.dock.err .now{color:var(--err)}
+.dock .btn{margin-left:auto}
+.dock .log{margin-top:6px;max-height:7.5em;overflow:auto;font:400 12px/1.5 var(--mono);color:var(--muted);white-space:pre-wrap;word-break:break-word}
+#d-bar{margin-top:12px}
+
+.done{max-width:480px;margin:20vh auto 0;padding:0 24px}
+.done h1{font-size:32px;font-weight:600;letter-spacing:-.045em}
+.done p{margin-top:8px;color:var(--muted)}
+
+@media (max-width:980px){
+  .grid2,.split{grid-template-columns:minmax(0,1fr)}
+  .facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .thumbs{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media (max-width:700px){
+  .wrap{padding:0 16px}
+  .chip{display:none}
+  .page-h{flex-direction:column;align-items:flex-start;padding:28px 0 20px}
+  .page-h .btn{margin-left:0}
+  .pc-main{grid-template-columns:minmax(0,1fr);gap:24px;padding:20px}
+  .cookie{width:156px;height:156px}
+  .cookie-in .big{font-size:60px}
+  .model-h{flex-direction:column}
+  .model-h .btn{margin-left:0}
+  .group{flex-direction:column}
+  .group label:first-child{border-radius:28px 28px 8px 8px}
+  .group label:last-child{border-radius:8px 8px 28px 28px}
+  .frow{grid-template-columns:minmax(0,1fr) 84px}
+  .frow .wave{grid-column:1/-1;grid-row:2}
+  .form{grid-template-columns:minmax(0,1fr)}
+  .card-b{padding:20px}
+  .card-f{padding:10px 20px}
+  .table,.table tbody,.table tr,.table td{display:block}
+  .table thead{display:none}
+  .table tr{padding:10px 0;border-top:1px solid var(--line)}
+  .table tr:first-child{border-top:0}
+  .table td{padding:4px 20px;border:0}
+  .tools{justify-content:flex-start}
+  .kv>div{grid-template-columns:minmax(0,1fr);gap:2px}
 }
 @media (prefers-reduced-motion:reduce){
-  *{transition:none!important;scroll-behavior:auto!important}
-  .rise{opacity:1;transform:none}
+  *{animation:none!important;transition:none!important}
 }
 </style>
 </head>
 <body>
-<header class="bar">
-  <div class="wrap">
-    <a class="mark" href="#top">imagegen-cc</a>
-    <nav aria-label="Sections">
-      <a href="#models">Local models</a>
-      <a href="#api">Online service</a>
-      <a href="#comfy">ComfyUI</a>
-      <a href="#backends">Your backends</a>
-      <a href="#settings">Settings</a>
-    </nav>
+<header class="top">
+  <div class="bar wrap">
+    <a class="brand" href="#overview">imagegen-cc</a>
+    <span class="slash">/</span>
+    <span class="crumb" id="crumb-gpu">This PC</span>
+    <span class="chip mono" id="top-ver">v–</span>
     <span class="status" id="status" aria-live="polite">Reading this computer</span>
   </div>
+  <nav class="tabs wrap" aria-label="Sections">
+    <a href="#overview">Overview</a>
+    <a href="#backends">Backends<span class="count" id="n-backends">0</span></a>
+    <a href="#models">Local models</a>
+    <a href="#api">Online service</a>
+    <a href="#comfy">ComfyUI</a>
+    <a href="#settings">Settings</a>
+    <span class="ind" id="ind"></span>
+  </nav>
 </header>
 
-<main class="wrap" id="top">
-  <div class="hero">
-    <div class="rise">
-      <h1>Give Claude a camera</h1>
-      <p class="lead">Pick an image model that runs on this computer, or connect an online service. Claude then makes and edits pictures when you ask.</p>
-      <div class="actions">
-        <a class="btn" href="#models" id="cta" style="display:inline-flex;align-items:center;text-decoration:none">See models for this PC</a>
-        <a class="btn quiet" href="#api" style="display:inline-flex;align-items:center;text-decoration:none">Use an online service</a>
-      </div>
-    </div>
-    <div class="machine rise" aria-label="This computer">
-      <div class="gpu" id="gpu">Checking the graphics card</div>
-      <div class="nums">
-        <div><div class="num" id="vram">–</div><div class="unit">GB graphics memory</div></div>
-        <div><div class="num" id="ram">–</div><div class="unit">GB system memory</div></div>
-        <div><div class="num" id="disk">–</div><div class="unit">GB free disk</div></div>
-      </div>
-      <div class="eng" id="eng">Engine: not installed yet</div>
-    </div>
+<main class="wrap">
+  <div class="page-h">
+    <div><h1 id="view-title">Overview</h1><p id="view-sub"></p></div>
+    <a class="btn accent" id="head-act" hidden></a>
   </div>
 
-  <div class="shots rise" id="shots" hidden aria-label="Recent pictures">
-    <div class="strip" id="strip"></div>
-    <p id="shots-note">The latest pictures Claude made on this computer.</p>
-  </div>
-
-  <section id="models" aria-labelledby="h-models">
-    <div class="head rise">
-      <h2 id="h-models">Models that run on this PC</h2>
-      <p>The highlighted model fits your graphics card best. Sizes that need more memory than you have are switched off. Install downloads the engine and the model, checks every file, and makes the model ready for Claude.</p>
-    </div>
-    <div class="rows" id="recipes"></div>
-    <div class="have rise">
-      <div>
-        <h3>Already have model files?</h3>
-        <p class="note" style="margin-top:8px">Give a folder, for example your ComfyUI models folder. Files with the same name and size are used where they are, so nothing is downloaded twice.</p>
+  <section class="view" id="overview" data-title="Overview" data-sub="This PC, the models it can run, and what Claude made" data-act="#models" data-act-label="Install a model">
+    <div class="card pc">
+      <div class="pc-main">
+        <div class="cookie"><svg viewBox="0 0 200 200" aria-hidden="true"><path id="cookie-path"/></svg><div class="cookie-in"><span class="big" id="vram">–</span><span>GB VRAM</span></div></div>
+        <dl class="facts">
+          <div><dt>Graphics card</dt><dd id="gpu">Checking</dd></div>
+          <div><dt>System memory</dt><dd class="mono"><span id="ram">–</span> GB</dd></div>
+          <div><dt>Free disk</dt><dd class="mono"><span id="disk">–</span> GB</dd></div>
+          <div><dt>Engine</dt><dd><span class="dot" id="eng-dot"></span><span id="eng">–</span></dd></div>
+          <div><dt>Default backend</dt><dd id="def-backend">None yet</dd></div>
+          <div><dt>Best fit</dt><dd id="best-fit">–</dd></div>
+        </dl>
       </div>
-      <div>
-        <div class="field"><label for="search">Folder to search</label><input type="text" id="search" placeholder="C:\AI\ComfyUI\models" autocomplete="off" spellcheck="false"></div>
-        <details style="margin-top:16px">
-          <summary style="cursor:pointer;font-size:var(--s-s);font-weight:600">Use one specific file for a part</summary>
-          <div class="grid2" style="margin-top:14px">
+      <div class="card-f"><span id="eng-sub"></span><a class="link" href="#models">Browse models →</a></div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-h"><h2>Backends</h2><a class="link" href="#backends">View all →</a></div>
+        <div id="ov-backends"></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h2>Fits this card</h2><span class="faint small">Best size, VRAM used</span></div>
+        <div class="rows" id="fits"></div>
+      </div>
+    </div>
+    <div class="card" id="shots" aria-label="Recent pictures">
+      <div class="card-h"><h2>Recent pictures</h2><span class="faint small">Newest first</span></div>
+      <div class="thumbs" id="strip"></div>
+      <p class="empty-in" id="shots-empty">No pictures yet. Once a backend works, ask Claude for an image.</p>
+    </div>
+  </section>
+
+  <section class="view" id="backends" data-title="Backends" data-sub="Claude uses the default unless you name another. Online tests can cost money." hidden>
+    <div class="card" id="blist"></div>
+  </section>
+
+  <section class="view" id="models" data-title="Local models" data-sub="Runs on this PC. Sizes that need more memory than you have are off." hidden>
+    <div class="stack" id="recipes"></div>
+    <div class="card">
+      <div class="card-b">
+        <h2>Existing files</h2>
+        <p>Point to a folder, for example your ComfyUI models folder. Files with the same name and size are used where they are, so nothing downloads twice.</p>
+        <div class="field" style="margin-top:20px"><label for="search">Folder to search</label><input type="text" id="search" placeholder="C:\AI\ComfyUI\models" autocomplete="off" spellcheck="false"></div>
+        <details>
+          <summary>Specific files</summary>
+          <div class="form">
             <div class="field"><label for="l-diffusion">Image model file</label><input type="text" id="l-diffusion" spellcheck="false"></div>
             <div class="field"><label for="l-llm">Text encoder file</label><input type="text" id="l-llm" spellcheck="false"></div>
             <div class="field"><label for="l-vae">VAE file</label><input type="text" id="l-vae" spellcheck="false"></div>
-            <div class="field"><label for="l-llm_vision">Vision file (for editing)</label><input type="text" id="l-llm_vision" spellcheck="false"></div>
+            <div class="field"><label for="l-llm_vision">Vision file (editing)</label><input type="text" id="l-llm_vision" spellcheck="false"></div>
           </div>
         </details>
       </div>
+      <div class="card-f"><span>Used by the next install</span></div>
     </div>
   </section>
 
-  <section id="api" aria-labelledby="h-api">
+  <section class="view" id="api" data-title="Online service" data-sub="Any service with an OpenAI-compatible images endpoint" hidden>
     <div class="split">
-      <div class="steps-text rise">
-        <h2 id="h-api">Use an online image service</h2>
-        <p>Any service with an OpenAI-compatible images endpoint works. Enter its base address, your key, and the model name from the service's documentation.</p>
-        <p class="note">The key goes to your operating system's password store. It never appears in Claude's conversation.</p>
-      </div>
-      <form class="panel rise" id="f-api" autocomplete="off">
-        <div class="grid2">
-          <div class="field"><label for="a-name">Name</label><input type="text" id="a-name" value="online" required></div>
-          <div class="field"><label for="a-model">Model</label><input type="text" id="a-model" placeholder="gpt-image-1"></div>
-          <div class="field full"><label for="a-url">Base address</label><input type="url" id="a-url" placeholder="https://api.example.com/v1" required></div>
-          <div class="field full"><label for="a-key">API key</label><input type="password" id="a-key" placeholder="Paste the key"></div>
-        </div>
-        <details style="margin-top:18px">
-          <summary style="cursor:pointer;font-size:var(--s-s);font-weight:600">Custom settings</summary>
-          <div class="grid2" style="margin-top:14px">
-            <div class="field"><label for="a-header">Key header</label><input type="text" id="a-header" value="Authorization"></div>
-            <div class="field"><label for="a-prefix">Key prefix</label><input type="text" id="a-prefix" value="Bearer "></div>
-            <div class="field"><label for="a-kind">Protocol</label><select id="a-kind"><option value="openai">OpenAI images API</option><option value="sdcpp">stable-diffusion.cpp server</option></select></div>
-            <div class="field full"><label for="a-extra">Extra request fields (JSON)</label><textarea id="a-extra" placeholder='{"quality": "high", "output_format": "webp"}'></textarea></div>
+      <form class="card" id="f-api" autocomplete="off">
+        <div class="card-b">
+          <h2>Service</h2>
+          <p>Base address, key and model name come from the service's documentation.</p>
+          <div class="form">
+            <div class="field"><label for="a-name">Name</label><input type="text" id="a-name" value="online" required></div>
+            <div class="field"><label for="a-model">Model</label><input type="text" id="a-model" placeholder="gpt-image-1"></div>
+            <div class="field full"><label for="a-url">Base address</label><input type="url" id="a-url" placeholder="https://api.example.com/v1" required></div>
+            <div class="field full"><label for="a-key">API key</label><input type="password" id="a-key" placeholder="Paste the key" autocomplete="new-password"></div>
           </div>
-        </details>
-        <div class="actions" style="margin-top:24px"><button class="btn" type="submit">Save service</button></div>
-      </form>
-    </div>
-  </section>
-
-  <section id="comfy" aria-labelledby="h-comfy">
-    <div class="split">
-      <div class="steps-text rise">
-        <h2 id="h-comfy">Use your own ComfyUI</h2>
-        <p>Already running ComfyUI with a fast setup? Connect it and Claude uses it at full speed. Load the model lists, pick Qwen-Image 2.1 files, and save. Or point to your own workflow exported with Workflow, Export (API), with {{prompt}} where the text goes.</p>
-      </div>
-      <form class="panel rise" id="f-comfy" autocomplete="off">
-        <div class="grid2">
-          <div class="field"><label for="c-name">Name</label><input type="text" id="c-name" value="comfyui" required></div>
-          <div class="field"><label for="c-url">ComfyUI address</label><input type="url" id="c-url" value="http://127.0.0.1:8188" required></div>
+          <details>
+            <summary>Custom settings</summary>
+            <div class="form">
+              <div class="field"><label for="a-header">Key header</label><input type="text" id="a-header" value="Authorization"></div>
+              <div class="field"><label for="a-prefix">Key prefix</label><input type="text" id="a-prefix" value="Bearer "></div>
+              <div class="field full"><label for="a-kind">Protocol</label><select id="a-kind"><option value="openai">OpenAI images API</option><option value="sdcpp">stable-diffusion.cpp server</option></select></div>
+              <div class="field full"><label for="a-extra">Extra request fields (JSON)</label><textarea id="a-extra" placeholder='{"quality": "high", "output_format": "webp"}'></textarea></div>
+            </div>
+          </details>
         </div>
-        <div class="actions" style="margin-top:18px"><button class="btn quiet" type="button" id="c-load">Load model lists</button></div>
-        <div class="grid2" id="c-picks" style="margin-top:18px" hidden>
-          <div class="field full"><label for="c-unet">Image model</label><select id="c-unet"></select></div>
-          <div class="field"><label for="c-clip">Text encoder</label><select id="c-clip"></select></div>
-          <div class="field"><label for="c-vae">VAE</label><select id="c-vae"></select></div>
-          <div class="field"><label for="c-steps">Steps</label><input type="text" id="c-steps" value="30" inputmode="numeric"></div>
-          <div class="field"><label for="c-cfg">Guidance</label><input type="text" id="c-cfg" value="3.5" inputmode="decimal"></div>
-        </div>
-        <div class="field" style="margin-top:18px"><label for="c-wf">Or your API workflow file</label><input type="text" id="c-wf" placeholder="C:\AI\workflows\my-flow.api.json" spellcheck="false"></div>
-        <div class="actions" style="margin-top:24px"><button class="btn" type="submit">Save ComfyUI</button></div>
+        <div class="card-f"><span>Key goes to your system password store</span><button class="btn sm" type="submit">Save service</button></div>
       </form>
+      <aside class="aside">
+        <div><h3>Key stays private</h3><p>It never appears in Claude's conversation.</p></div>
+        <div><h3>Two protocols</h3><p>OpenAI images API, or a stable-diffusion.cpp server.</p></div>
+        <div><h3>Tests cost money</h3><p>Test makes one real image on the service.</p></div>
+      </aside>
     </div>
   </section>
 
-  <section id="backends" aria-labelledby="h-backends">
-    <div class="head rise">
-      <h2 id="h-backends">Your backends</h2>
-      <p>Claude uses the default backend unless you name another one. Test makes one small real image so you can see that everything works. With an online service a test can cost money.</p>
-    </div>
-    <div id="blist" class="rise"></div>
-  </section>
-
-  <section id="settings" aria-labelledby="h-settings">
+  <section class="view" id="comfy" data-title="ComfyUI" data-sub="Use your running ComfyUI at full speed" hidden>
     <div class="split">
-      <div class="steps-text rise">
-        <h2 id="h-settings">Settings</h2>
-        <p>Pictures are saved outside the plugin folder, so removing the plugin never deletes your images.</p>
-      </div>
-      <div class="panel rise">
-        <form id="f-out" class="field"><label for="s-out">Save pictures to</label><input type="text" id="s-out" spellcheck="false"><small>Leave empty for the default Pictures folder.</small><div class="actions" style="margin-top:6px"><button class="btn quiet small" type="submit">Save folder</button></div></form>
-        <form id="f-hf" class="field" style="margin-top:28px"><label for="s-hf">Hugging Face token</label><input type="password" id="s-hf" placeholder="Only needed for gated models"><small id="hf-state">Not set.</small><div class="actions" style="margin-top:6px"><button class="btn quiet small" type="submit">Save token</button></div></form>
-      </div>
+      <form class="card" id="f-comfy" autocomplete="off">
+        <div class="card-b">
+          <h2>Connection</h2>
+          <p>Load the model lists, pick the Qwen-Image 2.1 files, save.</p>
+          <div class="form">
+            <div class="field"><label for="c-name">Name</label><input type="text" id="c-name" value="comfyui" required></div>
+            <div class="field"><label for="c-url">ComfyUI address</label><input type="url" id="c-url" value="http://127.0.0.1:8188" required></div>
+            <div class="full"><button class="btn ghost sm" type="button" id="c-load">Load model lists</button></div>
+          </div>
+          <div class="form" id="c-picks" hidden>
+            <div class="field full"><label for="c-unet">Image model</label><select id="c-unet"></select></div>
+            <div class="field"><label for="c-clip">Text encoder</label><select id="c-clip"></select></div>
+            <div class="field"><label for="c-vae">VAE</label><select id="c-vae"></select></div>
+            <div class="field"><label for="c-steps">Steps</label><input type="text" id="c-steps" value="30" inputmode="numeric"></div>
+            <div class="field"><label for="c-cfg">Guidance</label><input type="text" id="c-cfg" value="3.5" inputmode="decimal"></div>
+          </div>
+          <details>
+            <summary>Own workflow</summary>
+            <div class="field" style="margin-top:16px"><label for="c-wf">API workflow file</label><input type="text" id="c-wf" placeholder="C:\AI\workflows\my-flow.api.json" spellcheck="false"><small>Overrides the model picks</small></div>
+          </details>
+        </div>
+        <div class="card-f"><span>Press Test in Backends after saving</span><button class="btn sm" type="submit">Save ComfyUI</button></div>
+      </form>
+      <aside class="aside">
+        <div><h3>Export your workflow</h3><p>In ComfyUI use Workflow, Export (API).</p></div>
+        <div><h3>Prompt slot</h3><p>Put <code>{{prompt}}</code> where the text goes.</p></div>
+      </aside>
     </div>
   </section>
 
-  <section id="remove" aria-labelledby="h-remove">
-    <div class="danger-zone rise">
-      <div>
-        <h2 id="h-remove">Remove everything</h2>
-        <p style="margin-top:16px;max-width:46ch">Stops the engine, deletes downloaded models and the engine, deletes saved keys, then removes the plugin from Claude Code. Your own model files and your pictures stay.</p>
+  <section class="view" id="settings" data-title="Settings" data-sub="Output folder, tokens and removal" hidden>
+    <form class="card" id="f-out">
+      <div class="card-b">
+        <h2>Output folder</h2>
+        <p>Pictures are saved outside the plugin folder, so removing the plugin never deletes them.</p>
+        <div class="field" style="margin-top:20px"><label for="s-out">Save pictures to</label><input type="text" id="s-out" spellcheck="false"></div>
       </div>
-      <form id="f-un" class="field">
-        <label for="u-confirm">Type uninstall to confirm</label>
-        <input type="text" id="u-confirm" autocomplete="off">
-        <div class="actions" style="margin-top:6px"><button class="btn" type="submit">Remove imagegen-cc</button></div>
-      </form>
+      <div class="card-f"><span>Empty means the default Pictures folder</span><button class="btn sm" type="submit">Save</button></div>
+    </form>
+    <form class="card" id="f-hf">
+      <div class="card-b">
+        <h2>Hugging Face token</h2>
+        <p>Only needed for gated models.</p>
+        <div class="field" style="margin-top:20px"><label for="s-hf">Token</label><input type="password" id="s-hf" placeholder="hf_..." autocomplete="new-password"></div>
+      </div>
+      <div class="card-f"><span id="hf-state">Not set.</span><button class="btn sm" type="submit">Save</button></div>
+    </form>
+    <div class="card">
+      <div class="card-h"><h2>Storage</h2></div>
+      <dl class="rows kv">
+        <div><dt>Pictures</dt><dd class="mono" id="p-out">–</dd></div>
+        <div><dt>Plugin data</dt><dd class="mono" id="p-data">–</dd></div>
+        <div><dt>Version</dt><dd class="mono" id="p-ver">–</dd></div>
+        <div><dt>Licenses</dt><dd>Models Apache-2.0 unless noted</dd></div>
+      </dl>
     </div>
+    <form class="card danger-card" id="f-un">
+      <div class="card-b">
+        <h2>Remove everything</h2>
+        <p>Stops the engine, deletes downloaded models, the engine and saved keys, then removes the plugin from Claude Code. Your own model files and your pictures stay.</p>
+        <div class="field" style="margin-top:20px"><label for="u-confirm">Type uninstall to confirm</label><input type="text" id="u-confirm" autocomplete="off"></div>
+      </div>
+      <div class="card-f"><span>This cannot be undone</span><button class="btn danger sm" type="submit">Remove imagegen-cc</button></div>
+    </form>
   </section>
 </main>
 
-<footer class="wrap">
-  <div class="big">imagegen-cc</div>
-  <div class="paths">
-    <div>Pictures<br><span id="p-out">–</span></div>
-    <div>Plugin data<br><span id="p-data">–</span></div>
-    <div>Version <span id="p-ver">–</span>. Models: Apache-2.0 unless noted.</div>
-  </div>
-</footer>
-
 <div class="dock" id="dock" role="status" aria-live="polite">
-  <div class="wrap">
-    <div>
-      <div class="now" id="d-now">Working</div>
-      <div class="log" id="d-log"></div>
-      <div class="meter"><i id="d-bar"></i></div>
-    </div>
-    <button class="btn quiet small" type="button" id="d-close">Hide</button>
-  </div>
+  <div class="dock-h"><div class="now" id="d-now">Working</div><button class="btn ghost sm" type="button" id="d-close">Hide</button></div>
+  <div class="log" id="d-log"></div>
+  <div id="d-bar" hidden></div>
 </div>
 
 <script>
@@ -315,66 +445,118 @@ const T=sessionStorage.getItem("igc-t")||"";
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const gb=b=>(b/1e9).toFixed(b>=1e10?0:1)+" GB";
-let S=null,busy=false;
+const KIND={local:"local",comfyui:"comfyui",openai:"online",sdcpp:"sd.cpp"};
+let S=null,busy=false,waves=0;
 async function api(path,body,extra){
   const r=await fetch(path,{method:body===undefined?"GET":"POST",headers:{"x-token":T,"content-type":"application/json",...(extra||{})},body:body===undefined?undefined:JSON.stringify(body)});
   const t=await r.text();
   if(!r.ok)throw new Error(t||r.statusText);
   return t?JSON.parse(t):{};
 }
+function wave(p,live){
+  const W=240,L=14,end=Math.max(0,Math.min(1,p))*W,id="w"+waves++;
+  let d="";
+  for(let x=-L;x<=end+L;x+=1)d+=(d?"L":"M")+x+","+(6+2.4*Math.sin(x/L*2*Math.PI)).toFixed(2);
+  const from=end>0?end+6:0;
+  return `<svg class="wave${live?" live":""}" viewBox="0 0 ${W} 12" preserveAspectRatio="none" aria-hidden="true"><clipPath id="${id}"><rect width="${end}" height="12"/></clipPath><g clip-path="url(#${id})"><path d="${d}"/></g>${from<W?`<line x1="${from}" y1="6" x2="${W}" y2="6"/>`:""}</svg>`;
+}
+{
+  const pts=[];
+  for(let i=0;i<=180;i++){const a=i/180*Math.PI*2,r=91+7*Math.cos(9*a);pts.push((100+r*Math.cos(a)).toFixed(1)+","+(100+r*Math.sin(a)).toFixed(1))}
+  $("#cookie-path").setAttribute("d","M"+pts.join("L")+"Z");
+}
+const views=[...document.querySelectorAll(".view")];
+const links=[...document.querySelectorAll(".tabs a")];
+function place(){const a=links.find(x=>x.hasAttribute("aria-current"));if(a){$("#ind").style.left=a.offsetLeft+"px";$("#ind").style.width=a.offsetWidth+"px"}}
+function route(){
+  const v=views.find(x=>"#"+x.id===location.hash)||views[0];
+  views.forEach(x=>x.hidden=x!==v);
+  links.forEach(a=>a.hash==="#"+v.id?a.setAttribute("aria-current","page"):a.removeAttribute("aria-current"));
+  $("#view-title").textContent=v.dataset.title;$("#view-sub").textContent=v.dataset.sub;
+  const act=$("#head-act");act.hidden=!v.dataset.act;if(v.dataset.act){act.href=v.dataset.act;act.textContent=v.dataset.actLabel}
+  place();scrollTo(0,0);
+}
+addEventListener("hashchange",route);addEventListener("resize",place);document.fonts.ready.then(place);route();
 const dock=$("#dock");
-function show(now,lines,err){dock.classList.add("on");dock.classList.toggle("err",!!err);$("#d-now").textContent=now;$("#d-log").textContent=(lines||[]).slice(-6).join("\n");const m=/\((\d+)%\)/.exec((lines||[]).at(-1)||"");$("#d-bar").style.width=m?m[1]+"%":(err?"0":"")}
+function bar(p,live){$("#d-bar").hidden=false;$("#d-bar").innerHTML=wave(p,live)}
+function show(now,lines,err,live){
+  dock.classList.add("on");dock.classList.toggle("err",!!err);$("#d-now").textContent=now;$("#d-log").textContent=(lines||[]).slice(-6).join("\n");
+  const m=/\((\d+)%\)/.exec((lines||[]).at(-1)||"");
+  if(m||live)bar(m?m[1]/100:1,!!live);else $("#d-bar").hidden=true;
+}
 $("#d-close").onclick=()=>dock.classList.remove("on");
 async function follow(id,title){
   busy=true;
   for(;;){
     const j=await api("/api/job/"+id);
-    show(j.done?(j.error?"Stopped":"Done"):title,j.lines,j.error);
-    if(j.done){busy=false;if(j.error){show("Stopped: "+j.error.split("\n")[0],[...j.lines,j.error],true);throw new Error(j.error)}$("#d-bar").style.width="100%";return j.result}
+    show(j.done?(j.error?"Stopped":"Done"):title,j.lines,j.error,!j.done);
+    if(j.done){busy=false;if(j.error){show("Stopped: "+j.error.split("\n")[0],[...j.lines,j.error],true);throw new Error(j.error)}bar(1,false);return j.result}
     await new Promise(r=>setTimeout(r,500));
   }
 }
 function fail(e){show("Error",[String(e.message||e)],true)}
+const what=b=>b.kind==="local"?`${esc(b.recipe)} (${esc(b.variant)}) on the ${esc(b.engine)} engine`:b.kind==="comfyui"?`ComfyUI at ${esc(b.base_url)}`:`${esc(b.base_url)}${b.model?", model "+esc(b.model):""}. Key: ${b.api_key==="none"?"none":"saved"}`;
+const kind=b=>`<span class="kind">${esc(KIND[b.kind]||b.kind)}</span>`;
+const empty=`<div class="empty"><h3>No backends yet</h3><p>Pick one way for Claude to make pictures: a model on this PC, an online service, or your ComfyUI.</p><div class="btns"><a class="btn accent sm" href="#models">Install local model</a><a class="btn ghost sm" href="#api">Connect service</a><a class="btn ghost sm" href="#comfy">Connect ComfyUI</a></div></div>`;
 function renderMachine(){
   const g=S.hw.gpus.find(x=>x.vendor!=="other");
-  $("#gpu").textContent=g?g.name:"No supported graphics card found";
+  $("#gpu").textContent=g?g.name:"No supported graphics card";
+  $("#crumb-gpu").textContent=g?g.name:"CPU only";
   $("#vram").textContent=S.vram_gb||"0";$("#ram").textContent=S.ram_gb;$("#disk").textContent=Math.floor(S.hw.disk_free_mb/1024);
-  $("#eng").textContent=S.engine?`Engine: ${S.engine.kind} ready${S.engine.gfx?" ("+S.engine.gfx+")":""}`:`Engine: not installed yet. It installs with the first model (${S.engine_order.join(", then ")})`;
+  $("#eng").textContent=S.engine?`${S.engine.kind} ready${S.engine.gfx?" ("+S.engine.gfx+")":""}`:"Not installed";
+  $("#eng-dot").className="dot "+(S.engine?"ok":"warn");
+  $("#eng-sub").textContent=S.engine?"Engine ready for local models":`Engine installs with the first model: ${S.engine_order.join(", then ")}`;
   const n=S.backends.length;
-  $("#status").textContent=n?`${n} backend${n>1?"s":""}. Default: ${S.default_backend}`:"No backend yet";
+  $("#status").textContent=n?`${n} backend${n>1?"s":""}`:"No backend yet";
+  $("#status").dataset.state=n?"ok":"warn";
+  $("#n-backends").textContent=n;
+  $("#def-backend").textContent=S.default_backend||"None yet";
+}
+function renderOverview(){
+  $("#ov-backends").innerHTML=S.backends.length?`<div class="rows">${S.backends.map(b=>`<div class="brow"><span class="dot${S.default_backend===b.name?" ok":""}"></span><div style="min-width:0"><b>${esc(b.name)}</b> ${kind(b)}<div class="what">${what(b)}</div></div>${S.default_backend===b.name?`<span class="tag ok">Default</span>`:"<span></span>"}</div>`).join("")}</div>`:empty;
+  const have=S.vram_gb||0;
+  $("#fits").innerHTML=S.recipes.map(r=>{const v=r.variants.find(x=>x.id===r.best);return v?`<div class="frow"><div style="min-width:0"><b>${esc(r.name)}</b><span class="muted">${esc(v.label)}</span></div>${wave(have?v.min_vram_gb/have:1)}<span class="mono">${v.min_vram_gb}/${have} GB</span></div>`:`<div class="frow"><div><b>${esc(r.name)}</b><span class="faint">Too big for this card</span></div><span></span><span></span></div>`}).join("");
+}
+function fit(card){
+  const r=S.recipes.find(x=>x.id===card.dataset.id);
+  const v=r.variants.find(x=>x.id===card.querySelector("input:checked")?.value)||r.variants[0];
+  const have=S.vram_gb||0;
+  card.querySelector(".meter").innerHTML=`${wave(have?v.min_vram_gb/have:1)}<span class="mono">${v.min_vram_gb} / ${have} GB VRAM</span>`;
 }
 function renderRecipes(){
   const box=$("#recipes");
   const order=[...S.recipes].sort((a,b)=>(b.best?1:0)-(a.best?1:0));
   const top=order.find(r=>r.best);
+  $("#best-fit").textContent=top?`${top.name}, ${top.variants.find(v=>v.id===top.best).label}`:"Nothing fits";
   box.innerHTML=order.map(r=>{
     const pick=r.best||r.variants.at(-1).id;
     const any=r.variants.some(v=>v.fits);
-    return `<div class="row rise${top&&r.id===top.id?" best":""}" data-id="${esc(r.id)}">
-      <div><h3>${esc(r.name)}</h3><p class="about">${esc(r.about)}</p><p class="meta">${esc(r.license)}${r.edit?". Can edit pictures":""}</p></div>
-      <div><div class="seg" role="radiogroup" aria-label="Size of ${esc(r.name)}">${r.variants.map(v=>`<label><input type="radio" name="v-${esc(r.id)}" value="${esc(v.id)}" ${v.id===pick?"checked":""} ${v.fits?"":"disabled"}><span>${esc(v.label)}, ${gb(v.bytes)}</span></label>`).join("")}</div>
-      <p class="meta">${any?"Download size includes everything this model needs.":"Needs at least "+Math.min(...r.variants.map(v=>v.min_vram_gb))+" GB graphics memory."}</p></div>
-      <div><button class="btn" type="button" data-install="${esc(r.id)}" ${any?"":"disabled"}>Install</button></div>
-    </div>`}).join("");
+    const best=top&&r.id===top.id;
+    return `<article class="card model${best?" best":""}" data-id="${esc(r.id)}">
+      <div class="model-h"><div><h3>${esc(r.name)}</h3><div class="tags">${best?`<span class="tag accent">Best fit</span>`:""}<span class="tag">${esc(r.license)}</span>${r.edit?`<span class="tag">Can edit</span>`:""}${any?"":`<span class="tag">Needs ${Math.min(...r.variants.map(v=>v.min_vram_gb))} GB VRAM</span>`}</div><p>${esc(r.about)}</p></div>
+      <button class="btn${best?" accent":""}" type="button" data-install="${esc(r.id)}" ${any?"":"disabled"}>Install</button></div>
+      <div class="group" role="radiogroup" aria-label="Size of ${esc(r.name)}">${r.variants.map(v=>`<label><input type="radio" name="v-${esc(r.id)}" value="${esc(v.id)}" ${v.id===pick?"checked":""} ${v.fits?"":"disabled"}><span>${esc(v.label)}</span><b>${gb(v.bytes)}</b></label>`).join("")}</div>
+      <div class="meter"></div>
+    </article>`}).join("");
+  box.querySelectorAll(".model").forEach(fit);
+  box.onchange=e=>fit(e.target.closest(".model"));
   box.querySelectorAll("[data-install]").forEach(b=>b.onclick=()=>install(b.dataset.install));
-  reveal();
 }
 function renderBackends(){
   const box=$("#blist");
-  if(!S.backends.length){box.innerHTML=`<p class="empty">No backend yet. Install a local model above, or connect a service or ComfyUI.</p>`;return}
-  box.innerHTML=`<table><thead><tr><th>Name</th><th>What it is</th><th>Default</th><th>Actions</th></tr></thead><tbody>${S.backends.map(b=>{
-    const what=b.kind==="local"?`${esc(b.recipe)} (${esc(b.variant)}) on the ${esc(b.engine)} engine`:b.kind==="comfyui"?`ComfyUI at ${esc(b.base_url)}`:`${esc(b.base_url)}${b.model?", model "+esc(b.model):""}. Key: ${b.api_key==="none"?"none":"saved"}`;
+  if(!S.backends.length){box.innerHTML=empty;return}
+  box.innerHTML=`<table class="table"><thead><tr><th>Name</th><th>Type</th><th>Details</th><th>Default</th><th></th></tr></thead><tbody>${S.backends.map(b=>{
     const def=S.default_backend===b.name;
-    return `<tr><td><div class="name">${esc(b.name)}</div></td><td>${what}${b.edit?"<br><span class='note'>Can edit pictures</span>":""}<div class="test" id="t-${esc(b.name)}" hidden><img alt="Test picture from ${esc(b.name)}"><div class="note"></div></div></td>
-    <td>${def?"<span class='ok'>Default</span>":`<button class="btn quiet small" data-def="${esc(b.name)}">Make default</button>`}</td>
-    <td><div class="tools"><button class="btn small" data-test="${esc(b.name)}">Test</button><button class="btn quiet small" data-rm="${esc(b.name)}">Remove</button></div></td></tr>`}).join("")}</tbody></table>`;
+    return `<tr><td class="name">${esc(b.name)}</td><td>${kind(b)}</td><td><div class="what">${what(b)}</div>${b.edit?"<span class='faint small'>Can edit pictures</span>":""}<div class="test" id="t-${esc(b.name)}" hidden><img alt="Test picture from ${esc(b.name)}"><div class="muted"></div></div></td>
+    <td>${def?`<span class="tag ok">Default</span>`:`<button class="btn ghost sm" data-def="${esc(b.name)}">Make default</button>`}</td>
+    <td><div class="tools"><button class="btn sm" data-test="${esc(b.name)}">Test</button><button class="btn ghost sm" data-rm="${esc(b.name)}">Remove</button></div></td></tr>`}).join("")}</tbody></table>`;
   box.querySelectorAll("[data-def]").forEach(b=>b.onclick=async()=>{try{await api("/api/default",{name:b.dataset.def});await load()}catch(e){fail(e)}});
   box.querySelectorAll("[data-rm]").forEach(b=>b.onclick=async()=>{if(!confirm(`Remove ${b.dataset.rm}? Downloaded files only it uses are deleted.`))return;try{await api("/api/remove",{name:b.dataset.rm});await load()}catch(e){fail(e)}});
   box.querySelectorAll("[data-test]").forEach(b=>b.onclick=()=>test(b.dataset.test,b));
 }
 async function test(name,btn){
   if(busy)return;btn.disabled=true;
-  try{const j=await api("/api/test",{name});const r=await follow(j.job,"Making a test picture with "+name);const box=$("#t-"+CSS.escape(name));box.hidden=false;box.querySelector("img").src=r.image;box.querySelector(".note").textContent=`Made in ${(r.ms/1000).toFixed(1)} s. Claude can now use ${name}.`}
+  try{const j=await api("/api/test",{name});const r=await follow(j.job,"Making a test picture with "+name);const box=$("#t-"+CSS.escape(name));box.hidden=false;box.querySelector("img").src=r.image;box.querySelector(".muted").textContent=`Made in ${(r.ms/1000).toFixed(1)} s. Claude can now use ${name}.`}
   catch(e){}finally{btn.disabled=false}
 }
 async function install(id){
@@ -383,19 +565,20 @@ async function install(id){
   const links={};["diffusion","llm","vae","llm_vision"].forEach(k=>{const x=$("#l-"+k).value.trim();if(x)links[k]=x});
   const search=$("#search").value.trim();
   const name=S.backends.some(b=>b.name==="local")?id.replace(/[^a-z0-9]+/gi,"-").slice(0,40):"local";
-  try{const j=await api("/api/local",{name,recipe:id,variant:v,search:search?[search]:[],links});const r=await follow(j.job,"Installing "+id);show(r.message,["Next: press Test in Your backends."]);await load();location.hash="#backends"}
+  try{const j=await api("/api/local",{name,recipe:id,variant:v,search:search?[search]:[],links});const r=await follow(j.job,"Installing "+id);show(r.message,["Next: press Test in Backends."]);await load();location.hash="#backends"}
   catch(e){}
 }
 $("#f-api").onsubmit=async e=>{e.preventDefault();try{const r=await api("/api/api",{name:$("#a-name").value,base_url:$("#a-url").value,model:$("#a-model").value,key:$("#a-key").value,auth_header:$("#a-header").value,auth_prefix:$("#a-prefix").value,kind:$("#a-kind").value,extra:$("#a-extra").value});$("#a-key").value="";show("Service saved",[r.key_store?"Key saved in the "+(r.key_store==="keychain"?"system password store":"plugin folder (no password store on this system)"):"No key saved."]);await load()}catch(x){fail(x)}};
 $("#c-load").onclick=async()=>{try{const r=await api("/api/comfyui/models?url="+encodeURIComponent($("#c-url").value));const fill=(id,list,want)=>{$(id).innerHTML=list.map(x=>`<option ${want&&want.test(x)?"selected":""}>${esc(x)}</option>`).join("")};fill("#c-unet",r.unet,/qwen_image_2\.1(?!.*turbo)/i);fill("#c-clip",r.clip,/qwen3vl/i);fill("#c-vae",r.vae,/qwen_image_2\.1_vae/i);$("#c-picks").hidden=false;show(r.qwen21?"ComfyUI found with Qwen-Image 2.1 support":"ComfyUI found, but Qwen-Image 2.1 nodes are missing. Use your own workflow file",[])}catch(x){fail(x)}};
-$("#f-comfy").onsubmit=async e=>{e.preventDefault();const wf=$("#c-wf").value.trim();try{await api("/api/comfyui",{name:$("#c-name").value,base_url:$("#c-url").value,workflow_path:wf||null,unet:wf?null:$("#c-unet").value||null,clip:wf?null:$("#c-clip").value||null,vae:wf?null:$("#c-vae").value||null,steps:+$("#c-steps").value||30,guidance:+$("#c-cfg").value||3.5});show("ComfyUI saved",["Press Test in Your backends."]);await load();location.hash="#backends"}catch(x){fail(x)}};
+$("#f-comfy").onsubmit=async e=>{e.preventDefault();const wf=$("#c-wf").value.trim();try{await api("/api/comfyui",{name:$("#c-name").value,base_url:$("#c-url").value,workflow_path:wf||null,unet:wf?null:$("#c-unet").value||null,clip:wf?null:$("#c-clip").value||null,vae:wf?null:$("#c-vae").value||null,steps:+$("#c-steps").value||30,guidance:+$("#c-cfg").value||3.5});show("ComfyUI saved",["Press Test in Backends."]);await load();location.hash="#backends"}catch(x){fail(x)}};
 $("#f-out").onsubmit=async e=>{e.preventDefault();try{const r=await api("/api/settings",{output_dir:$("#s-out").value});show("Folder saved",[r.output_dir]);await load()}catch(x){fail(x)}};
 $("#f-hf").onsubmit=async e=>{e.preventDefault();try{await api("/api/hf-token",{token:$("#s-hf").value});$("#s-hf").value="";show("Token saved",[]);await load()}catch(x){fail(x)}};
-$("#f-un").onsubmit=async e=>{e.preventDefault();if($("#u-confirm").value.trim()!=="uninstall"){fail("Type uninstall to confirm");return}try{const r=await api("/api/uninstall",{},{"x-confirm":"uninstall"});document.body.innerHTML=`<main class="wrap" style="padding-top:20vh"><h1>Removed</h1><p class="lead">${r.plugin_uninstall_started?"Claude Code is removing the plugin. You can close this tab.":"Data deleted. Run /plugin in Claude Code to remove the plugin."}</p></main>`}catch(x){fail(x)}};
-let io;function reveal(){io=io||new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){const d=+(e.target.dataset.d||0);setTimeout(()=>e.target.classList.add("in"),d);io.unobserve(e.target)}}),{rootMargin:"0px 0px -8% 0px"});document.querySelectorAll(".rise:not(.in)").forEach((el,i)=>{el.dataset.d=(i%4)*75;io.observe(el)})}
-async function shots(){try{const r=await api("/api/recent");const box=$("#shots");if(!r.files.length){box.hidden=true;return}$("#strip").innerHTML=r.files.slice(0,8).map(f=>`<figure><img loading="lazy" alt="Picture made by Claude: ${esc(f.split("/").pop().replace(/^\d+-\d+-/,"").replace(/\.\w+$/,"").replace(/-/g," "))}" src="/api/img?t=${encodeURIComponent(T)}&f=${encodeURIComponent(f)}"></figure>`).join("");box.hidden=false;reveal()}catch(e){}}
-async function load(){shots();S=await api("/api/state");renderMachine();renderRecipes();renderBackends();$("#s-out").value=S.output_dir||"";$("#p-out").textContent=S.output_dir;$("#p-data").textContent=S.data_dir;$("#p-ver").textContent=S.version;$("#hf-state").textContent=S.hf_token?"Saved.":"Not set.";reveal()}
-reveal();load().catch(e=>{$("#status").textContent="Cannot reach the plugin";fail(e)});
+$("#f-un").onsubmit=async e=>{e.preventDefault();if($("#u-confirm").value.trim()!=="uninstall"){fail("Type uninstall to confirm");return}try{const r=await api("/api/uninstall",{},{"x-confirm":"uninstall"});document.body.innerHTML=`<main class="done"><h1>Removed</h1><p>${r.plugin_uninstall_started?"Claude Code is removing the plugin. You can close this tab.":"Data deleted. Run /plugin in Claude Code to remove the plugin."}</p></main>`}catch(x){fail(x)}};
+const title=f=>f.split("/").pop().replace(/^\d+-\d+-/,"").replace(/\.\w+$/,"").replace(/-/g," ");
+const src=f=>`/api/img?t=${encodeURIComponent(T)}&f=${encodeURIComponent(f)}`;
+async function shots(){try{const r=await api("/api/recent");$("#strip").innerHTML=r.files.map(f=>`<a href="${src(f)}" target="_blank" rel="noopener" title="${esc(title(f))}"><img loading="lazy" alt="Picture made by Claude: ${esc(title(f))}" src="${src(f)}"></a>`).join("");$("#strip").hidden=!r.files.length;$("#shots-empty").hidden=!!r.files.length}catch(e){}}
+async function load(){shots();S=await api("/api/state");renderMachine();renderOverview();renderRecipes();renderBackends();$("#s-out").value=S.output_dir||"";$("#p-out").textContent=S.output_dir;$("#p-data").textContent=S.data_dir;$("#p-ver").textContent=S.version;$("#top-ver").textContent="v"+S.version;$("#hf-state").textContent=S.hf_token?"Saved.":"Not set."}
+load().catch(e=>{$("#status").textContent="Cannot reach the plugin";$("#status").dataset.state="err";fail(e)});
 </script>
 </body>
 </html>

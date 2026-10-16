@@ -20,6 +20,8 @@ use std::time::{Duration, Instant};
 use tokio::sync::OnceCell;
 
 const PAGE: &str = include_str!("../web/index.html");
+const GEIST: &[u8] = include_bytes!("../web/geist.woff2");
+const GEIST_MONO: &[u8] = include_bytes!("../web/geist-mono.woff2");
 
 #[derive(Default)]
 struct Job {
@@ -56,6 +58,8 @@ pub async fn start() -> Result<String, String> {
         let app = Arc::new(App { token: token.clone(), port, jobs: Mutex::new(HashMap::new()), next: AtomicU64::new(1), seen: Mutex::new(Instant::now()) });
         let router = Router::new()
             .route("/", get(page))
+            .route("/geist.woff2", get(|| async { woff2(GEIST) }))
+            .route("/geist-mono.woff2", get(|| async { woff2(GEIST_MONO) }))
             .route("/api/state", get(state))
             .route("/api/job/{id}", get(job))
             .route("/api/engine", post(engine_install))
@@ -122,6 +126,10 @@ async fn guard(State(app): S, req: Request, next: Next) -> Response {
 
 async fn page() -> Html<&'static str> {
     Html(PAGE)
+}
+
+fn woff2(bytes: &'static [u8]) -> impl IntoResponse {
+    ([(header::CONTENT_TYPE, "font/woff2")], bytes)
 }
 
 fn spawn_job<F, Fut>(app: &Arc<App>, f: F) -> Json<Value>

@@ -2,4 +2,13 @@
 /dist
 .mcpb-cache/
 .taste-skill/
-PLAN.md
+node_modules/
+*.log
+*.part
+*.part.state
+.env
+.env.*
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

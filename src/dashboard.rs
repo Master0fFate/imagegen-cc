@@ -17,7 +17,7 @@ use std::path::PathBuf;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
-use tokio::sync::OnceCell;
+use tokio::task::JoinHandle;
 
 const PAGE: &str = include_str!("../web/index.html");
 const GEIST: &[u8] = include_bytes!("../web/geist.woff2");
@@ -42,58 +42,68 @@ struct App {
 type S = State<Arc<App>>;
 type ApiResult = Result<Json<Value>, (StatusCode, String)>;
 
-static URL: OnceCell<String> = OnceCell::const_new();
+static RUNNING: tokio::sync::Mutex<Option<(String, JoinHandle<()>)>> = tokio::sync::Mutex::const_new(None);
 
 fn bad(e: impl Into<String>) -> (StatusCode, String) {
     (StatusCode::BAD_REQUEST, e.into())
 }
 
 pub async fn start() -> Result<String, String> {
-    URL.get_or_try_init(|| async {
-        let mut raw = [0u8; 24];
-        getrandom::fill(&mut raw).map_err(|e| e.to_string())?;
-        let token = crate::download::hex(&raw);
-        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.map_err(|e| e.to_string())?;
-        let port = listener.local_addr().map_err(|e| e.to_string())?.port();
-        let app = Arc::new(App { token: token.clone(), port, jobs: Mutex::new(HashMap::new()), next: AtomicU64::new(1), seen: Mutex::new(Instant::now()) });
-        let router = Router::new()
-            .route("/", get(page))
-            .route("/geist.woff2", get(|| async { woff2(GEIST) }))
-            .route("/geist-mono.woff2", get(|| async { woff2(GEIST_MONO) }))
-            .route("/api/state", get(state))
-            .route("/api/job/{id}", get(job))
-            .route("/api/engine", post(engine_install))
-            .route("/api/local", post(local_add))
-            .route("/api/api", post(api_add))
-            .route("/api/comfyui/models", get(comfy_models))
-            .route("/api/comfyui", post(comfy_add))
-            .route("/api/test", post(test))
-            .route("/api/default", post(set_default))
-            .route("/api/remove", post(remove))
-            .route("/api/settings", post(settings))
-            .route("/api/hf-token", post(hf_token))
-            .route("/api/uninstall", post(uninstall))
-            .route("/api/recent", get(recent))
-            .route("/api/img", get(img))
-            .layer(middleware::from_fn_with_state(app.clone(), guard))
-            .with_state(app.clone());
-        let idle = app.clone();
-        tokio::spawn(async move {
-            let server = axum::serve(listener, router);
-            let watchdog = async move {
-                loop {
-                    tokio::time::sleep(Duration::from_secs(60)).await;
-                    if idle.seen.lock().map(|t| t.elapsed() > Duration::from_secs(3600)).unwrap_or(false) {
-                        return;
-                    }
+    let mut running = RUNNING.lock().await;
+    if let Some((url, server)) = running.as_ref()
+        && !server.is_finished() {
+            return Ok(url.clone());
+        }
+    let mut raw = [0u8; 24];
+    getrandom::fill(&mut raw).map_err(|e| e.to_string())?;
+    let token = crate::download::hex(&raw);
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.map_err(|e| e.to_string())?;
+    let port = listener.local_addr().map_err(|e| e.to_string())?.port();
+    let app = Arc::new(App { token: token.clone(), port, jobs: Mutex::new(HashMap::new()), next: AtomicU64::new(1), seen: Mutex::new(Instant::now()) });
+    let router = Router::new()
+        .route("/", get(page))
+        .route("/geist.woff2", get(|| async { woff2(GEIST) }))
+        .route("/geist-mono.woff2", get(|| async { woff2(GEIST_MONO) }))
+        .route("/api/state", get(state))
+        .route("/api/job/{id}", get(job))
+        .route("/api/engine", post(engine_install))
+        .route("/api/local", post(local_add))
+        .route("/api/api", post(api_add))
+        .route("/api/comfyui/models", get(comfy_models))
+        .route("/api/comfyui", post(comfy_add))
+        .route("/api/test", post(test))
+        .route("/api/default", post(set_default))
+        .route("/api/remove", post(remove))
+        .route("/api/settings", post(settings))
+        .route("/api/hf-token", post(hf_token))
+        .route("/api/uninstall", post(uninstall))
+        .route("/api/recent", get(recent))
+        .route("/api/img", get(img))
+        .layer(middleware::from_fn_with_state(app.clone(), guard))
+        .with_state(app.clone());
+    let idle = app.clone();
+    let server = tokio::spawn(async move {
+        let server = axum::serve(listener, router);
+        let watchdog = async move {
+            loop {
+                tokio::time::sleep(Duration::from_secs(60)).await;
+                if idle.seen.lock().map(|t| t.elapsed() > Duration::from_secs(3600)).unwrap_or(false) {
+                    return;
                 }
-            };
-            tokio::select! { _ = server => {}, () = watchdog => {} }
-        });
-        Ok::<String, String>(format!("http://127.0.0.1:{port}/?t={token}"))
-    })
-    .await
-    .cloned()
+            }
+        };
+        tokio::select! { _ = server => {}, () = watchdog => {} }
+    });
+    let url = format!("http://127.0.0.1:{port}/?t={token}");
+    *running = Some((url.clone(), server));
+    Ok(url)
+}
+
+pub async fn wait_closed() {
+    let running = RUNNING.lock().await.take();
+    if let Some((_, server)) = running {
+        let _ = server.await;
+    }
 }
 
 async fn guard(State(app): S, req: Request, next: Next) -> Response {

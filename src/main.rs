@@ -94,7 +94,7 @@ async fn cli(args: &[String]) -> Result<String, String> {
             if !rest.contains(&"--no-open") {
                 dashboard::open_browser(&url);
             }
-            std::future::pending::<()>().await;
+            dashboard::wait_closed().await;
             Ok(String::new())
         }
         ["hw"] => {

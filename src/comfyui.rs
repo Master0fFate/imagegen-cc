@@ -111,7 +111,7 @@ pub async fn run(name: &str, b: &Backend, g: &Gen, images: &[PathBuf]) -> Result
                 let msgs = entry.pointer("/status/messages").map(|m| m.to_string()).unwrap_or_default();
                 return Err(format!("Backend '{name}': ComfyUI error: {}", msgs.chars().take(800).collect::<String>()));
             }
-            if entry.get("outputs").and_then(Value::as_object).is_some_and(|o| !o.is_empty()) {
+            if entry.get("outputs").and_then(Value::as_object).is_some_and(|o| !o.is_empty()) || entry.pointer("/status/completed").and_then(Value::as_bool) == Some(true) {
                 break entry.clone();
             }
         }

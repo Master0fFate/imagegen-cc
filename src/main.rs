@@ -9,6 +9,7 @@ mod hw;
 mod mcp;
 mod models;
 mod output;
+mod parent;
 mod paths;
 mod remote_zip;
 mod secrets;
@@ -245,7 +246,7 @@ fn main() -> ExitCode {
             return ExitCode::FAILURE;
         }
     };
-    rt.block_on(async {
+    let code = rt.block_on(async {
         if !args.is_empty() {
             return match cli(&args).await {
                 Ok(msg) => {
@@ -260,7 +261,10 @@ fn main() -> ExitCode {
         }
         let code = match mcp::Server::new().serve(rmcp::transport::stdio()).await {
             Ok(s) => {
-                let _ = s.waiting().await;
+                tokio::select! {
+                    _ = s.waiting() => {}
+                    () = parent::exited() => {}
+                }
                 ExitCode::SUCCESS
             }
             Err(e) => {
@@ -270,5 +274,7 @@ fn main() -> ExitCode {
         };
         engine::MANAGER.stop().await;
         code
-    })
+    });
+    rt.shutdown_background();
+    code
 }
